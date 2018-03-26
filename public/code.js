@@ -33,12 +33,11 @@ function preparePlayer(response){
   $("div#title").text(response.title);
   player.show();
   $("div.title").show();
-  $("div#input").css("padding-bottom", "0px");
 }
 
 $(document).ready(function(){
   $("input#test").click(function(){
-    $("input#videoURL").val("https://www.youtube.com/watch?v=hUJElYE6FFw");
+    $("input#videoURL").val("https://youtu.be/NWks-8C9RMs?t=2m30s");
     $("input#videoURL").change();
   });
   $("input#videoURL").change(function(){
