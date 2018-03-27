@@ -5,9 +5,9 @@ import './App.css';
 class App extends Component {
   render() {
     return (
-      <div className="AppDark fill">
-        <header className="App-headerDark">
-          <h1 className="App-title">YouTube Audio Player</h1>
+      <div className="AppDark fill" id="AppContainer">
+        <header className="App-headerDark" id="AppHeader">
+            <h1 className="App-title">YouTube Audio Player</h1>
             <button className="btn btn-outline-light" id="changeSkinButton">Day mode</button>
         </header>
           <div className="container-fluid">
@@ -20,6 +20,9 @@ class App extends Component {
                               <input type="button" className="input-group-text btn btn-outline-dark" id="test" name="test" value="TEST"/>
                           </div>
                           <input type="text" className="form-control" id="videoURL" name="videoURL"/>
+                      </div>
+                      <div className="alert alert-danger" id="alert" role="alert">
+                          
                       </div>
                       <div className="title" id="NP">
                           Now Playing:
