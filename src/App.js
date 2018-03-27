@@ -5,9 +5,10 @@ import './App.css';
 class App extends Component {
   render() {
     return (
-      <div className="App fill">
-        <header className="App-header">
+      <div className="AppDark fill">
+        <header className="App-headerDark">
           <h1 className="App-title">YouTube Audio Player</h1>
+            <button className="btn btn-outline-light" id="changeSkinButton">Day mode</button>
         </header>
           <div className="container-fluid">
               <h5 id="title">Enter Youtube video Link</h5>
