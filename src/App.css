@@ -67,15 +67,14 @@
   height: 25px;
   margin: 0;
   transform: translateX(100%);
-  animation: title 40s linear infinite;
+  animation: title 30s linear -15s infinite;
 }
 
 @keyframes title {
-  0% { transform: translateX(0%) }
-  40% { transform: translateX(0%) }
-  70% { transform: translateX(-100%) }
-  70.01% { transform: translateX(100%) }
-  100% { transform: translateX(0%) }
+  0% { transform: translateX(100%) }
+  35% { transform: translateX(0%) }
+  65% { transform: translateX(0%) }
+  100% { transform: translateX(-100%) }
 }
 
 #audioQuery { margin-top: 100px; }
