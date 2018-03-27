@@ -1,52 +1,37 @@
 @import url('https://fonts.googleapis.com/css?family=Titillium+Web');
 
+#AppContainer {
+  font-family: 'Titillium Web', sans-serif;
+  text-align: center;
+  transition: color 1s;
+  transition: background-color 1s;
+}
+
 .AppDark {
-    font-family: 'Titillium Web', sans-serif;
-    text-align: center;
-    background-color: #222;
-    color: white;
-}
-
-.AppLight{
-    font-family: 'Titillium Web', sans-serif;
-    text-align: center;
-    background-color: white;
-    color: #222;
-}
-
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
-}
-
-.App-headerDark {
-    background: #535353;
-  /*background-color: #222;*/
-  height: 75px;
-  padding: 20px;
+  background-color: #222;
   color: white;
 }
 
-.App-headerLight {
-    /*background: #535353;*/
-    background-color: #222;
-    height: 75px;
-    padding: 20px;
-    color: white;
+.AppLight{
+  background-color: white;
+  color: #222;
 }
 
-.App-title {
-  font-size: 1.5em;
+#AppHeader {
+  height: 75px;
+  padding: 20px;
+  color: white;
+  transition: background-color 1s;
 }
 
-.App-intro {
-  font-size: large;
-}
+.App-headerDark { background-color: #535353; }
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
+.App-headerLight { background-color: #222; }
+
+.App-title { font-size: 1.5em; }
+
+.App-intro { font-size: large; }
+
 .fill{
   min-height: 100vh;
   height: 100vh;
@@ -61,37 +46,55 @@
   padding-bottom: 16px;
 }
 
+.alert {
+  display: none;
+  margin: 8px 0px;
+}
+
 .title{
   display: none;
   position: relative;
   height: 48px;
+  overflow: hidden;
 }
 
-.title > div {
+.title > #title {
   position: absolute;
-  width: 100%;
   bottom: 4px;
+  position: absolute;
+  white-space: nowrap;
+  min-width: 100%;
+  height: 25px;
+  margin: 0;
+  transform: translateX(100%);
+  animation: title 40s linear infinite;
 }
 
-#audioQuery {
-    margin-top: 100px;
+@keyframes title {
+  0% { transform: translateX(0%) }
+  40% { transform: translateX(0%) }
+  70% { transform: translateX(-100%) }
+  70.01% { transform: translateX(100%) }
+  100% { transform: translateX(0%) }
 }
+
+#audioQuery { margin-top: 100px; }
 
 #title {
-    margin-top: 100px;
-    font-size: 20px;
-}
-#greyText {
-    color: dimgrey;
+  margin-top: 100px;
+  font-size: 20px;
 }
 
+#greyText { color: dimgrey; }
+
 #NP {
-    margin-top: 35px;
-    margin-bottom: 5px;
+  margin-top: 35px;
+  margin-bottom: 5px;
 }
 
 #changeSkinButton {
-    position: fixed;
-    top: 20px;
-    right: 20px;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 110px;
 }
