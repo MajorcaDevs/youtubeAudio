@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import $ from 'jquery';
 import 'bootstrap/dist/css/bootstrap.css';
 import './App.css';
+import github from './github.svg';
 
 class App extends Component {
     constructor (props) {
@@ -84,7 +85,7 @@ class App extends Component {
                 </header>
                 <div className="container-fluid">
                     <h5 id="title">Enter Youtube video Link</h5>
-                    <p id="greyText">Use intro to get the audio from the link</p>
+                    <p id="greyText">Enjoy the audio from the youtube videos!</p>
                     <div className="d-flex row justify-content-center align-items-center" id="audioQuery">
                         <div className="col-md-6 col-sm-12">
                             <div className="input-group" id="input">
@@ -123,6 +124,32 @@ class App extends Component {
                             }
                         </div>
                     </div>
+                </div>
+                <div>
+                    <footer className={`${nightMode ? 'App-footerDark' : 'App-footerLight'}`} id="AppFooter">
+                        <div className={`${nightMode ? 'App-footerDark' : 'App-footerLight'} row`} id="FooterContentGit">
+                            <a href="https://github.com/RaulWhite/youtubeAudio" target="_blank" rel="noopener noreferrer"
+                               className="col-4">
+                                { !nightMode ?
+                                    <img alt="GitHub" src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg"
+                                         id="githubLogo"/>
+                                    :
+                                    <img alt="GitHub" src={github} id="githubLogo"/>
+                                } GitHub repository</a>
+                            <div className={`${nightMode ? 'App-footerDark' : 'App-footerLight'} col-4`} id="FooterContent">
+                                Uses <a href="https://github.com/melchor629/youtubedl-audio-api"
+                                        target="_blank" rel="noopener noreferrer">YoutubeDL audio API</a>
+                            </div>
+                            <div className={`${nightMode ? 'App-footerDark' : 'App-footerLight'} col-4`} id="FooterContent">
+                                Made by: <a href="https://github.com/raulwhite" target="_blank"
+                                            rel="noopener noreferrer">Raul White</a>, <a href="http://alkesst.github.io"
+                                                                                         target="_blank" rel="noopener noreferrer">
+                                Alkesst
+                            </a> & <a href="https://melchor9000.me" target="_blank" rel="noopener noreferrer">
+                                Melchor9000</a>
+                            </div>
+                        </div>
+                    </footer>
                 </div>
             </div>
         );

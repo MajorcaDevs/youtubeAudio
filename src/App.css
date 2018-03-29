@@ -24,9 +24,55 @@
   transition: background-color 1s;
 }
 
+#AppFooter {
+  height: 75px;
+  padding: 20px;
+  transition: background-color 1s;
+  bottom: 0;
+  width: 100%;
+  position: fixed;
+  text-align: center;
+}
+
+#FooterContent {
+  transition: background-color 1s;
+  padding: 8px;
+}
+
+#FooterContentGit{
+  transition: background-color 1s;
+}
+
+.App-footerDark > a {
+  color: #747474;
+}
+
+.App-footerDark > a:hover {
+  color: #505050;
+  text-decoration: none;
+}
+
+.App-footerLight > a {
+  color: #5d5d5d;
+}
+
+.App-footerLight > a:hover {
+  color: #343434;
+  text-decoration: none;
+}
+
 .App-headerDark { background-color: #535353; }
 
 .App-headerLight { background-color: #222; }
+
+.App-footerDark { background-color: #181818; color: #979797; }
+
+.App-footerLight { background-color: #d8d8d8; color: #5e5e5e; }
+
+#githubLogo{
+  width: 45px;
+  height: 45px;
+}
 
 .App-title { font-size: 1.5em; }
 
