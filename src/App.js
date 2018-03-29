@@ -19,6 +19,7 @@ class App extends Component {
         this.listenerForm = this.listenerForm.bind(this);
         this.listenerTestButton = this.listenerTestButton.bind(this);
         this.nightModeListener = this.nightModeListener.bind(this);
+        this.titleProgress = this.titleProgress.bind(this);
     }
 
     _testYoutubeVideoURL = "https://www.youtube.com/watch?v=bM7SZ5SBzyY";
@@ -40,6 +41,7 @@ class App extends Component {
             newState.invalidURL = url.length !== 0;
         }
         this.setState(newState);
+        $("title").text("YouTube Audio");
     }
 
     loadAudioURL(youtubeVideoID) {
@@ -50,6 +52,7 @@ class App extends Component {
             url: "https://yt-audio-api.herokuapp.com/api/" + youtubeVideoID,
             success: (response) => {
                 this.setState({youtubeAudioURL: response.url, youtubeVideoTitle: response.title, loading: false});
+                $("title").text(this.state.youtubeVideoTitle + " - YouTube Audio");
             },
             error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", error: true })
         });
@@ -71,6 +74,12 @@ class App extends Component {
         this.setState({ nightMode: !this.state.nightMode });
     }
 
+    titleProgress(event){
+        let time = Math.round(event.target.currentTime);
+        let seconds = time - (Math.floor(time/60)*60);
+        time = Math.floor(time/60) + ":" + (seconds < 10 ? "0"+seconds : seconds);
+        $("title").text(time + " - " + this.state.youtubeVideoTitle + " - YouTube Audio");
+    }
 
     render() {
         const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, error, nightMode } = this.state;
@@ -119,7 +128,8 @@ class App extends Component {
                                 </div> : null
                             }
                             { this.state.youtubeAudioURL ?
-                                <audio id="player" className="player" controls src={ youtubeAudioURL } /> : null
+                                <audio id="player" className="player" controls src={ youtubeAudioURL }
+                                       onTimeUpdate={ this.titleProgress } /> : null
                             }
                         </div>
                     </div>
