@@ -8,8 +8,8 @@
     "jquery": "^3.3.1",
     "npm": "^5.8.0",
     "popper.js": "^1.12.9",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
+    "react": "^16.3.0",
+    "react-dom": "^16.3.0",
     "react-scripts": "1.1.1"
   },
   "scripts": {

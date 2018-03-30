@@ -3,6 +3,7 @@ import $ from 'jquery';
 import 'bootstrap/dist/css/bootstrap.css';
 import './App.css';
 import github from './github.svg';
+import PlayQueue from './PlayQueue';
 
 class App extends Component {
     constructor (props) {
@@ -17,15 +18,54 @@ class App extends Component {
             error: false,
             nightMode: true,
             currentFormat: "",
-            compatibility: this.checkFormats()
+            youtubeVideoID: "",
+            compatibility: this.checkFormats(),
+            playQueue: new PlayQueue()
         });
-        this.listenerForm = this.listenerForm.bind(this);
+        this.audioRef = React.createRef();
         this.listenerTestButton = this.listenerTestButton.bind(this);
         this.nightModeListener = this.nightModeListener.bind(this);
         this.titleProgress = this.titleProgress.bind(this);
+        this.listenerForm = this.listenerForm.bind(this);
+        this.addToQueue = this.addToQueue.bind(this);
+        this.playSong = this.playSong.bind(this);
+        this.clear = this.clear.bind(this);
     }
 
     _testYoutubeVideoURL = "https://www.youtube.com/watch?v=bM7SZ5SBzyY";
+
+    clear(){
+        this.setState({playQueue: this.state.playQueue.emptyQueue(), error: false});
+    }
+
+    addToQueue(){
+        this.setState({loading: true, error: false});
+        $.ajax({
+            async: true,
+            type: "GET",
+            url: "https://yt-audio-api.herokuapp.com/api/" + this.state.youtubeVideoID,
+            success: (response) => {
+                this.setState({
+                    loading: false,
+                    playQueue: this.state.playQueue.add({
+                        id: this.state.youtubeVideoID,
+                        title: response.title
+                    })
+                });
+                if (this.state.playQueue.values.length === 1){
+                    this.selectBestOption(this.state.youtubeVideoID);
+                }
+            },
+            error: () => this.setState({ loading: false, error: true })
+        });
+    }
+
+    playSong(){
+        this.setState({error: false});
+        if (this.state.youtubeVideoID) {
+            this.selectBestOption(this.state.youtubeVideoID);
+        }
+    }
 
     checkFormats(){
         let a = document.createElement("audio");
@@ -48,7 +88,7 @@ class App extends Component {
         let youtubeVideoID = this.getYoutubeVideoID(url);
         if (youtubeVideoID !== null){
             newState.invalidURL = false;
-            this.selectBestOption(youtubeVideoID);
+            newState.youtubeVideoID = youtubeVideoID;
         } else {
             newState.invalidURL = url.length !== 0;
         }
@@ -56,7 +96,7 @@ class App extends Component {
         $("title").text("YouTube Audio");
     }
 
-    selectBestOption(youtubeVideoID) {
+    selectBestOption(youtubeVideoID, autoplay = false) {
         setTimeout(() => this.setState({ loading: true, error: false }));
         $.ajax({
             async: true,
@@ -68,7 +108,7 @@ class App extends Component {
                     .concat(response.filter(e => this.state.compatibility.vorbis && e.extra.startsWith('vorbis')))
                     .concat(response.filter(e => this.state.compatibility.opus && e.extra.startsWith('opus')));
                 response.forEach(e => {
-                    var bits = e.extra.split(/[\s@k]+/g);
+                    let bits = e.extra.split(/[\s@k]+/g);
                     if (e.extra.startsWith("m4a")){
                         bits[0] = "m4a"; e.codec = "m4a"; e.bitrate = 128;
                     } else {
@@ -84,7 +124,7 @@ class App extends Component {
                 response.sort(this.predicateBy("bitrate", true));
                 response.sort(this.predicateBy("preference"));
                 this.setState({ currentFormat: response[0].codec + "@" + response[0].bitrate + "k" });
-                this.loadAudioURL(youtubeVideoID, response[0].id);
+                this.loadAudioURL(youtubeVideoID, response[0].id, autoplay);
             },
             error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", error: true })
         });
@@ -101,7 +141,7 @@ class App extends Component {
         }
     }
 
-    loadAudioURL(youtubeVideoID, formatID) {
+    loadAudioURL(youtubeVideoID, formatID, autoplay = false) {
         $.ajax({
             async: true,
             type: "GET",
@@ -109,6 +149,7 @@ class App extends Component {
             success: (response) => {
                 this.setState({youtubeAudioURL: response.url, youtubeVideoTitle: response.title, loading: false});
                 $("title").text(this.state.youtubeVideoTitle + " - YouTube Audio");
+                if(autoplay) this.audioRef.current.play();
             },
             error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", error: true })
         });
@@ -135,6 +176,14 @@ class App extends Component {
         let seconds = time - (Math.floor(time/60)*60);
         time = Math.floor(time/60) + ":" + (seconds < 10 ? "0"+seconds : seconds);
         $("title").text(time + " - " + this.state.youtubeVideoTitle + " - YouTube Audio");
+
+        if(event.target.duration - event.target.currentTime < 0.1){
+            event.target.pause();
+            this.setState({playQueue: this.state.playQueue.deleteFirst()});
+            if (this.state.playQueue.values.length > 0){
+                this.selectBestOption(this.state.playQueue.values[0].id, true);
+            }
+        }
     }
 
     render() {
@@ -163,7 +212,18 @@ class App extends Component {
                                        value={ youtubeVideoURL } placeholder="insert here your youtube video url..."
                                        disabled={loading}/>
                             </div>
-                            <div className="alert alert-danger" id="alert" role="alert">
+                            <div className="row justify-content-center">
+                                <div className="btn-group mt-3">
+                                    <input type="button" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}`}
+                                           id="test" name="Play Song" value="Play Now!" onClick={ this.playSong }
+                                           disabled={loading}/>
+                                    <input type="button" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}`}
+                                           id="test" name="Add to Queue" value="Enqueue" onClick={ this.addToQueue }
+                                           disabled={loading}/>
+                                    <input type="button" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}`}
+                                           id="test" name="Clear queueue" value="Clear Queue" onClick={ this.clear }
+                                           disabled={loading}/>
+                                </div>
                             </div>
                             { loading ?
                                 <div className="row justify-content-center">
@@ -189,7 +249,7 @@ class App extends Component {
                             }
                             { this.state.youtubeAudioURL ?
                                 <audio id="player" className="player" controls src={ youtubeAudioURL }
-                                       onTimeUpdate={ this.titleProgress } /> : null
+                                       onTimeUpdate={ this.titleProgress } ref={this.audioRef} /> : null
                             }
                         </div>
                     </div>
