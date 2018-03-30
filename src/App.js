@@ -16,6 +16,7 @@ class App extends Component {
             youtubeVideoTitle: "",
             loading: false,
             error: false,
+            errorMessage: "",
             nightMode: true,
             currentFormat: "",
             youtubeVideoID: "",
@@ -35,11 +36,11 @@ class App extends Component {
     _testYoutubeVideoURL = "https://www.youtube.com/watch?v=bM7SZ5SBzyY";
 
     clear(){
-        this.setState({playQueue: this.state.playQueue.emptyQueue(), error: false});
+        this.setState({playQueue: this.state.playQueue.emptyQueue(), error: false, errorMessage: ""});
     }
 
     addToQueue(){
-        this.setState({loading: true, error: false});
+        this.setState({loading: true, error: false, errorMessage: ""});
         $.ajax({
             async: true,
             type: "GET",
@@ -56,12 +57,12 @@ class App extends Component {
                     this.selectBestOption(this.state.youtubeVideoID);
                 }
             },
-            error: () => this.setState({ loading: false, error: true })
+            error: () => this.setState({ loading: false, error: true, errorMessage: "Video not found..." })
         });
     }
 
     playSong(){
-        this.setState({error: false});
+        this.setState({error: false, errorMessage: ""});
         if (this.state.youtubeVideoID) {
             this.selectBestOption(this.state.youtubeVideoID);
         }
@@ -97,23 +98,23 @@ class App extends Component {
     }
 
     selectBestOption(youtubeVideoID, autoplay = false) {
-        setTimeout(() => this.setState({ loading: true, error: false }));
+        setTimeout(() => this.setState({ loading: true, error: false, errorMessage: "" }));
         $.ajax({
             async: true,
             type: "GET",
             url: "https://yt-audio-api.herokuapp.com/api/" + youtubeVideoID + "/formats",
             success: (response) => {
                 response = response
-                    .filter(e => this.state.compatibility.m4a && e.extra.startsWith('m4a'))
+                    .filter(e => this.state.compatibility.m4a && e.container === 'm4a')
                     .concat(response.filter(e => this.state.compatibility.vorbis && e.extra.startsWith('vorbis')))
                     .concat(response.filter(e => this.state.compatibility.opus && e.extra.startsWith('opus')));
+                if(response.length === 0){
+                    this.setState({ error: true, errorMessage: "Not compatible sources found for your browser", loading: false });
+                    return;
+                }
                 response.forEach(e => {
                     let bits = e.extra.split(/[\s@k]+/g);
-                    if (e.extra.startsWith("m4a")){
-                        bits[0] = "m4a"; e.codec = "m4a"; e.bitrate = 128;
-                    } else {
-                        e.codec = bits[0]; e.bitrate = parseInt(bits[1], 10);
-                    }
+                    e.codec = bits[0]; e.bitrate = parseInt(bits[1], 10);
                     switch (bits[0]){
                         case "opus": e.preference = 1; break;
                         case "vorbis": e.preference = 2; break;
@@ -126,7 +127,7 @@ class App extends Component {
                 this.setState({ currentFormat: response[0].codec + "@" + response[0].bitrate + "k" });
                 this.loadAudioURL(youtubeVideoID, response[0].id, autoplay);
             },
-            error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", error: true })
+            error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", error: true, errorMessage: "Video not found..." })
         });
     }
 
@@ -151,7 +152,7 @@ class App extends Component {
                 $("title").text(this.state.youtubeVideoTitle + " - YouTube Audio");
                 if(autoplay) this.audioRef.current.play();
             },
-            error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", error: true })
+            error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", error: true, errorMessage: "Video not found..." })
         });
     }
 
@@ -187,7 +188,7 @@ class App extends Component {
     }
 
     render() {
-        const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, error, nightMode, currentFormat } = this.state;
+        const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, error, errorMessage, nightMode, currentFormat } = this.state;
         return (
             <div className={`${nightMode ? 'AppDark' : 'AppLight'} fill`} id="AppContainer">
                 <header className={`${nightMode ? 'App-headerDark' : 'App-headerLight'}`} id="AppHeader">
@@ -236,7 +237,7 @@ class App extends Component {
                             }
                             { error ?
                                 <button className={`title ${nightMode ? 'errorDark' : 'errorLight'}`} id="stateText">
-                                    Video not found...
+                                    { errorMessage }
                                 </button> : null
                             }
                             { this.state.youtubeVideoTitle ?
