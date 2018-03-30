@@ -93,13 +93,13 @@ class App extends Component {
                     </button>
                 </header>
                 <div className="container-fluid">
-                    <h5 id="title">Enter Youtube video Link</h5>
-                    <p id="greyText">Enjoy the audio from the youtube videos!</p>
+                    <p className={`${nightMode ? 'greyTextDark' : 'greyTextLight'}`} id="greyText">
+                        Enjoy the audio from the youtube videos!</p>
                     <div className="d-flex row justify-content-center align-items-center" id="audioQuery">
                         <div className="col-md-6 col-sm-12">
                             <div className="input-group" id="input">
                                 <div className="input-group-prepend">
-                                    <input type="button" className="input-group-text btn btn-outline-dark"
+                                    <input type="button" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}`}
                                            id="test" name="test" value="TEST" onClick={ this.listenerTestButton }
                                            disabled={loading}/>
                                 </div>
@@ -111,17 +111,21 @@ class App extends Component {
                             <div className="alert alert-danger" id="alert" role="alert">
                             </div>
                             {loading ?
-                                <div className="title" id="NP">
-                                    Loading...
-                                </div> : null
+                                <div className="row justify-content-center">
+                                    <div className="title loading" id="stateText">
+                                        Loading...
+                                    </div>
+                                    <div className="loader"/>
+                                </div>
+                                    : null
                             }
                             { error ?
-                                <div className="title" id="NP">
+                                <button className={`title ${nightMode ? 'errorDark' : 'errorLight'}`} id="stateText">
                                     Video not found...
-                                </div> : null
+                                </button> : null
                             }
                             { this.state.youtubeVideoTitle ?
-                                <div className="title" id="NP">
+                                <div className="title" id="stateText">
                                     <div id="NowPlaying">
                                         Now Playing:
                                     </div>
@@ -137,7 +141,7 @@ class App extends Component {
                 </div>
                 <div>
                     <footer className={`${nightMode ? 'App-footerDark' : 'App-footerLight'}`} id="AppFooter">
-                        <div className={`${nightMode ? 'App-footerDark' : 'App-footerLight'} row`} id="FooterContentGit">
+                        <div className={`${nightMode ? 'App-footerDark' : 'App-footerLight'} row`} id="FooterContent">
                             <a href="https://github.com/RaulWhite/youtubeAudio" target="_blank" rel="noopener noreferrer"
                                className="col-4">
                                 { !nightMode ?
