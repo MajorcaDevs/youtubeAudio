@@ -67,6 +67,7 @@
 #githubLogo{
   width: 30px;
   height: 30px;
+  transition: filter 1s;
 }
 
 .loader {
@@ -86,6 +87,8 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+#githubLogo.githubDay { filter: invert(1); }
 
 .App-title { font-size: 1.5em; }
 
