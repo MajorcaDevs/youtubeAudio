@@ -115,7 +115,9 @@ class App extends Component {
                 response.forEach(e => {
                     let bits = e.extra.split(/[\s@k]+/g);
                     e.codec = bits[0]; e.bitrate = parseInt(bits[1], 10);
-                    switch (bits[0]){
+                    if (e.codec !== "vorbis" && e.codec !== "opus")
+                        e.codec = "m4a";
+                    switch (e.codec){
                         case "opus": e.preference = 1; break;
                         case "vorbis": e.preference = 2; break;
                         case "m4a": e.preference = 3; break;
