@@ -157,9 +157,14 @@ class App extends Component {
             type: "GET",
             url: "https://yt-audio-api.herokuapp.com/api/" + youtubeVideoID + "/" + formatID,
             success: (response) => {
+                if(autoplay) {
+                    this.audioRef.current.oncanplay = e => {
+                        this.audioRef.current.play();
+                        this.audioRef.current.oncanplay = null;
+                    };
+                }
                 this.setState({youtubeAudioURL: response.url, youtubeVideoTitle: response.title, loading: false});
                 $("title").text(this.state.youtubeVideoTitle + " - YouTube Audio");
-                if(autoplay) this.audioRef.current.play();
             },
             error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", error: true, errorMessage: "Video not found..." })
         });
@@ -186,14 +191,14 @@ class App extends Component {
         let seconds = time - (Math.floor(time/60)*60);
         time = Math.floor(time/60) + ":" + (seconds < 10 ? "0"+seconds : seconds);
         $("title").text(time + " - " + this.state.youtubeVideoTitle + " - YouTube Audio");
+    }
 
-        if(event.target.duration - event.target.currentTime < 0.1){
-            event.target.pause();
-            this.setState({playQueue: this.state.playQueue.deleteFirst()});
-            if (this.state.playQueue.values.length > 0){
+    onSongEnd(event) {
+        this.setState({ playQueue: this.state.playQueue.deleteFirst() }, () => {
+            if (this.state.playQueue.values.length > 0) {
                 this.selectBestOption(this.state.playQueue.values[0].id, true);
             }
-        }
+        });
     }
 
     render() {
@@ -259,7 +264,7 @@ class App extends Component {
                             }
                             { this.state.youtubeAudioURL ?
                                 <audio id="player" className="player" controls src={ youtubeAudioURL }
-                                       onTimeUpdate={ this.titleProgress } ref={this.audioRef} /> : null
+                                       onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd.bind(this) } /> : null
                             }
                         </div>
                     </div>
