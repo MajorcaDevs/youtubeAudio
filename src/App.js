@@ -61,7 +61,14 @@ class App extends Component {
     }
 
     playSong(){
-        this.setState({error: false, errorMessage: ""});
+        this.setState({
+            error: false,
+            errorMessage: "",
+            playQueue: !this.state.youtubeVideoID ? this.state.playQueue : this.state.playQueue.add({
+                id: this.state.youtubeVideoID,
+                title: null
+            })
+        });
         if (this.state.youtubeVideoID) {
             this.selectBestOption(this.state.youtubeVideoID);
         }
