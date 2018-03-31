@@ -26,7 +26,6 @@ class App extends Component {
         this.audioRef = React.createRef();
         this.listenerTestButton = this.listenerTestButton.bind(this);
         this.nightModeListener = this.nightModeListener.bind(this);
-        this.titleProgress = this.titleProgress.bind(this);
         this.listenerForm = this.listenerForm.bind(this);
         this.addToQueue = this.addToQueue.bind(this);
         this.playSong = this.playSong.bind(this);
@@ -174,21 +173,6 @@ class App extends Component {
         this.setState({ nightMode: !this.state.nightMode });
     }
 
-    titleProgress(event){
-        let time = Math.round(event.target.currentTime);
-        let seconds = time - (Math.floor(time/60)*60);
-        time = Math.floor(time/60) + ":" + (seconds < 10 ? "0"+seconds : seconds);
-        $("title").text(time + " - " + this.state.youtubeVideoTitle + " - YouTube Audio");
-
-        if(event.target.duration - event.target.currentTime < 0.1){
-            event.target.pause();
-            this.setState({playQueue: this.state.playQueue.deleteFirst()});
-            if (this.state.playQueue.values.length > 0){
-                this.selectBestOption(this.state.playQueue.values[0].id, true);
-            }
-        }
-    }
-
     render() {
         const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, error, errorMessage, nightMode, currentFormat } = this.state;
         return (
@@ -251,8 +235,7 @@ class App extends Component {
                                 </div> : null
                             }
                             { this.state.youtubeAudioURL ?
-                                <audio id="player" className="player" controls src={ youtubeAudioURL }
-                                       onTimeUpdate={ this.titleProgress } ref={this.audioRef} /> : null
+                                <audio id="player" className="player" controls src={ youtubeAudioURL } ref={this.audioRef} /> : null
                             }
                         </div>
                     </div>
