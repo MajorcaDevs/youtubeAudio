@@ -20,6 +20,10 @@ export default class PlayQueue {
        return new PlayQueue([...this.values, element ]);
     }
 
+    addFirst(element) {
+        return new PlayQueue([ element, ...this.values ]);
+    }
+
     emptyQueue(){
         return new PlayQueue([]);
     }

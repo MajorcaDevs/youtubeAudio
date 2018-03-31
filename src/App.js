@@ -66,7 +66,7 @@ class App extends Component {
         this.setState({
             error: false,
             errorMessage: "",
-            playQueue: !this.state.youtubeVideoID ? this.state.playQueue : this.state.playQueue.add({
+            playQueue: !this.state.youtubeVideoID ? this.state.playQueue : this.state.playQueue.addFirst({
                 id: this.state.youtubeVideoID,
                 title: null
             })
