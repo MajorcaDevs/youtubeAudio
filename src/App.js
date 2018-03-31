@@ -52,10 +52,11 @@ class App extends Component {
                         id: this.state.youtubeVideoID,
                         title: response.title
                     })
+                }, () => {
+                    if (this.state.playQueue.values.length > 0){
+                        this.selectBestOption(this.state.youtubeVideoID);
+                    }
                 });
-                if (this.state.playQueue.values.length === 1){
-                    this.selectBestOption(this.state.youtubeVideoID);
-                }
             },
             error: () => this.setState({ loading: false, error: true, errorMessage: "Video not found..." })
         });
