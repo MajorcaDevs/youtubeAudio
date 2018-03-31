@@ -24,7 +24,7 @@
 }
 
 #AppFooter {
-  height: 75px;
+  height: 80px;
   padding: 20px;
   transition: background-color 1s;
   bottom: 0;
@@ -182,11 +182,35 @@
 
 #changeSkinButton {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  min-width: 110px;
+  top: 17.5px;
+  right: 17.5px;
+  padding-left: 6px;
+  padding-right: 6px;
+  padding-top: 5px;
+  padding-bottom: 0px;
 }
 
 #NowPlaying {
   margin-bottom: 10px;
+}
+
+/* Resonsive Design */
+
+@media only screen and (max-width: 480px) {
+    #changeSkinButton {
+      position: absolute;
+      top: 90px;
+    }
+
+    .btn-outline-light {
+      background-color: #222;
+    }
+
+    #greyText{
+      margin-top: 70px;
+      font-size: 20px;
+    }
+
+    #audioQuery { margin-top: 50px; }
+
 }

@@ -195,8 +195,8 @@ class App extends Component {
             <div className={`${nightMode ? 'AppDark' : 'AppLight'} fill`} id="AppContainer">
                 <header className={`${nightMode ? 'App-headerDark' : 'App-headerLight'}`} id="AppHeader">
                     <h1 className="App-title">YouTube Audio Player</h1>
-                    <button className="btn btn-outline-light" id="changeSkinButton" onClick={ this.nightModeListener }>
-                        { !nightMode ? "Night Mode" : "Day mode"}
+                    <button className="btn btn-sm btn-outline-light float-right" id="changeSkinButton" onClick={ this.nightModeListener }>
+                        { !nightMode ? <i class="material-icons">brightness_2</i> : <i class="material-icons">wb_sunny</i>}
                     </button>
                 </header>
                 <div className="container-fluid">
@@ -257,7 +257,7 @@ class App extends Component {
                         </div>
                     </div>
                 </div>
-                <footer className={`${nightMode ? 'App-footerDark' : 'App-footerLight'}`} id="AppFooter">
+                <footer className={`${nightMode ? 'App-footerDark' : 'App-footerLight'} d-none d-m-block`} id="AppFooter">
                     <div className={`${nightMode ? 'App-footerDark' : 'App-footerLight'} row`} id="FooterContent">
                         <a href="https://github.com/RaulWhite/youtubeAudio" target="_blank" rel="noopener noreferrer"
                             className="col-4">
