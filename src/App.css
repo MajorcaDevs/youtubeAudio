@@ -194,6 +194,10 @@
   margin-bottom: 10px;
 }
 
+.btn:focus {
+  box-shadow: none;
+}
+
 /* Resonsive Design */
 
 @media only screen and (max-width: 480px) {
@@ -202,8 +206,17 @@
       top: 90px;
     }
 
+    .btn-outline-dark {
+      background-color: #FFF;
+    }
+
     .btn-outline-light {
       background-color: #222;
+    }
+
+    .onoffmode:hover{
+      background-color: #222;
+      color: inherit;
     }
 
     #greyText{
