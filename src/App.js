@@ -195,7 +195,7 @@ class App extends Component {
             <div className={`${nightMode ? 'AppDark' : 'AppLight'} fill`} id="AppContainer">
                 <header className={`${nightMode ? 'App-headerDark' : 'App-headerLight'}`} id="AppHeader">
                     <h1 className="App-title">YouTube Audio Player</h1>
-                    <button className="btn btn-sm btn-outline-light float-right" id="changeSkinButton" onClick={ this.nightModeListener }>
+                    <button className="btn btn-sm btn-outline-light float-right onoffmode" id="changeSkinButton" onClick={ this.nightModeListener }>
                         { !nightMode ? <i class="material-icons">brightness_2</i> : <i class="material-icons">wb_sunny</i>}
                     </button>
                 </header>
