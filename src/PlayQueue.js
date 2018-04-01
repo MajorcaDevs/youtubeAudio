@@ -3,13 +3,13 @@ export default class PlayQueue {
     constructor(initialValue) {
         if(initialValue) {
             this._array = initialValue;
-            window.sessionStorage.setItem("playQueue", JSON.stringify(this._array));
+            this._store();
         } else {
-            let playQueueJSONString = window.sessionStorage.getItem('playQueue');
+            let playQueueJSONString = this._obtain();
             if (playQueueJSONString !== null){
-                this._array= JSON.parse(playQueueJSONString);
+                this._array = playQueueJSONString;
             } else {
-                window.sessionStorage.setItem("playQueue", "[ ]");
+                this._store();
             }
         }
     }
@@ -39,6 +39,17 @@ export default class PlayQueue {
         } else {
             return this;
         }
+    }
+
+    _store() {
+        try {
+            window.sessionStorage.setItem("playQueue", JSON.stringify(this._array))
+        } catch(e) {}
+    }
+
+    _obtain() {
+        let value = window.sessionStorage.getItem('playQueue');
+        return value ? JSON.stringify(value) : value;
     }
 
 }

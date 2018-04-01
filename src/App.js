@@ -107,8 +107,8 @@ class App extends Component {
                         this.selectBestOption(this.state.playQueue.values[0].id, startPlaying);
                     }
                 });
-                if(response.nextToken) {
-                    this.addYoutubePlaylist(startPlaying, response.nextToken);
+                if(response.nextPageToken) {
+                    this.addYoutubePlaylist(startPlaying, response.nextPageToken);
                 }
             },
             error: () => this.setState({ loading: false, error: true, errorMessage: "Cannot load videos from playlist..." })
