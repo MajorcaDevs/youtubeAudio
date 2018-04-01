@@ -1,0 +1,12 @@
+#playQueueList{
+    width: 33%;
+    height: 100%;
+}
+
+.AppLight #playQueueList{
+    background-color: #d8d8d8;
+}
+
+.AppDark #playQueueList{
+    background-color: #181818;
+}

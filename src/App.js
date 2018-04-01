@@ -5,6 +5,7 @@ import './App.css';
 import github from './github.svg';
 import PlayQueue from './PlayQueue';
 import keys from './keys.json';
+import PlayQueueList from './PlayQueueList';
 
 const { GOOGLE_API_KEY } = keys;
 
@@ -273,6 +274,7 @@ class App extends Component {
                     </button>
                 </header>
                 <div className="container-fluid">
+                    <PlayQueueList showing={ showingQueue } playQueue={ this.state.playQueue }/>
                     <p className="greyText" id="greyText">
                         Enjoy the audio from the youtube videos!</p>
                     <div className="d-flex row justify-content-center align-items-center" id="audioQuery">
