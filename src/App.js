@@ -20,6 +20,7 @@ class App extends Component {
             nightMode: true,
             currentFormat: "",
             youtubeVideoID: "",
+            showingQueue: false,
             compatibility: this.checkFormats(),
             playQueue: new PlayQueue()
         });
@@ -29,6 +30,7 @@ class App extends Component {
         this.titleProgress = this.titleProgress.bind(this);
         this.listenerForm = this.listenerForm.bind(this);
         this.addToQueue = this.addToQueue.bind(this);
+        this.showQueue = this.showQueue.bind(this);
         this.playSong = this.playSong.bind(this);
         this.clear = this.clear.bind(this);
     }
@@ -189,18 +191,24 @@ class App extends Component {
         }
     }
 
+    showQueue(event) {
+        event.preventDefault();
+        this.setState({showingQueue: !this.state.showingQueue});
+    }
+
     render() {
-        const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, error, errorMessage, nightMode, currentFormat } = this.state;
+        const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, error, errorMessage, nightMode,
+            showingQueue, currentFormat } = this.state;
         return (
             <div className={`${nightMode ? 'AppDark' : 'AppLight'} fill`} id="AppContainer">
-                <header className={`${nightMode ? 'App-headerDark' : 'App-headerLight'}`} id="AppHeader">
+                <header className="App-header" id="AppHeader">
                     <h1 className="App-title">YouTube Audio Player</h1>
                     <button className="btn btn-outline-light" id="changeSkinButton" onClick={ this.nightModeListener }>
                         { !nightMode ? "Night Mode" : "Day mode"}
                     </button>
                 </header>
                 <div className="container-fluid">
-                    <p className={`${nightMode ? 'greyTextDark' : 'greyTextLight'}`} id="greyText">
+                    <p className="greyText" id="greyText">
                         Enjoy the audio from the youtube videos!</p>
                     <div className="d-flex row justify-content-center align-items-center" id="audioQuery">
                         <div className="col-md-6 col-sm-12">
@@ -238,7 +246,7 @@ class App extends Component {
                                     : null
                             }
                             { error ?
-                                <button className={`title ${nightMode ? 'errorDark' : 'errorLight'}`} id="stateText">
+                                <button className="title error" id="stateText">
                                     { errorMessage }
                                 </button> : null
                             }
@@ -254,21 +262,25 @@ class App extends Component {
                                 <audio id="player" className="player" controls src={ youtubeAudioURL }
                                        onTimeUpdate={ this.titleProgress } ref={this.audioRef} /> : null
                             }
+                            <button id="playQueue" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}`}
+                                    onClick={ this.showQueue }>
+                                <div id="arrow" className={`${showingQueue ? 'right' : 'left'}`}/>
+                            </button>
                         </div>
                     </div>
                 </div>
-                <footer className={`${nightMode ? 'App-footerDark' : 'App-footerLight'}`} id="AppFooter">
-                    <div className={`${nightMode ? 'App-footerDark' : 'App-footerLight'} row`} id="FooterContent">
+                <footer className="App-footer" id="AppFooter">
+                    <div className="App-footer row" id="FooterContent">
                         <a href="https://github.com/RaulWhite/youtubeAudio" target="_blank" rel="noopener noreferrer"
                             className="col-4">
                             <img alt="GitHub" src={github} id="githubLogo" className={!nightMode ? "githubDay" : null}/>
                             &nbsp;GitHub repository
                         </a>
-                        <div className={`${nightMode ? 'App-footerDark' : 'App-footerLight'} col-4`} id="FooterContent">
+                        <div className="App-footer col-4" id="FooterContent">
                             Uses <a href="https://github.com/melchor629/youtubedl-audio-api"
                                     target="_blank" rel="noopener noreferrer">YoutubeDL audio API</a>
                         </div>
-                        <div className={`${nightMode ? 'App-footerDark' : 'App-footerLight'} col-4`} id="FooterContent">
+                        <div className="App-footer col-4" id="FooterContent">
                             Made by:&nbsp;
                             <a href="https://github.com/raulwhite" target="_blank" rel="noopener noreferrer">
                                 Raul White

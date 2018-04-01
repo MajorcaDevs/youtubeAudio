@@ -38,31 +38,31 @@
   padding: 3px;
 }
 
-.App-footerDark > a {
+.AppDark .App-footer > a {
   color: #747474;
 }
 
-.App-footerDark > a:hover {
+.AppDark .App-footer > a:hover {
   color: #505050;
   text-decoration: none;
 }
 
-.App-footerLight > a {
+.AppLight .App-footer > a {
   color: #5d5d5d;
 }
 
-.App-footerLight > a:hover {
+.AppLight .App-footerLight > a:hover {
   color: #343434;
   text-decoration: none;
 }
 
-.App-headerDark { background-color: #535353; }
+.AppDark .App-header { background-color: #535353; }
 
-.App-headerLight { background-color: #222; }
+.AppLight .App-header { background-color: #222; }
 
-.App-footerDark { background-color: #181818; color: #979797; }
+.AppDark .App-footer { background-color: #181818; color: #979797; }
 
-.App-footerLight { background-color: #d8d8d8; color: #5e5e5e; }
+.AppLight .App-footer { background-color: #d8d8d8; color: #5e5e5e; }
 
 #githubLogo{
   width: 30px;
@@ -118,20 +118,19 @@
   overflow: hidden;
 }
 
-.errorDark {
+.error {
   color: #ff0000;
-  background-color: #230000;
   border-radius: 10px;
   transition: background-color 1s;
   border-color: #ff0000;
 }
 
-.errorLight {
-  color: #ff0000;
+.AppDark .error {
+  background-color: #230000;
+}
+
+.AppLight .error {
   background-color: transparent;
-  transition: background-color 1s;
-  border-radius: 10px;
-  border-color: #ff0000;
 }
 
 .loading {
@@ -164,12 +163,12 @@
   font-size: 20px;
 }
 
-.greyTextLight {
+.AppLight .greyText {
   color: #575757;
   transition: color 1s;
 }
 
-.greyTextDark{
+.AppDark .greyText{
   color: dimgrey;
   transition: color 1s;
 }
@@ -189,4 +188,40 @@
 
 #NowPlaying {
   margin-bottom: 10px;
+}
+
+#arrow {
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+  transition: border 0.15s;
+}
+
+#arrow.right{
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.AppLight #playQueue:hover div#arrow{
+  border-color: white;
+}
+
+#arrow.left{
+  transform: rotate(135deg);
+  -webkit-transform: rotate(135deg);
+}
+
+.AppLight #arrow {
+  border: solid black;
+  border-width: 0 3px 3px 0;
+}
+
+.AppDark #arrow {
+  border: solid white;
+  border-width: 0 3px 3px 0;
+}
+
+.AppDark #playQueue:hover div#arrow{
+  border-color: black;
 }
