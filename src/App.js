@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import $ from 'jquery';
 import 'bootstrap/dist/css/bootstrap.css';
+import 'material-design-icons/iconfont/material-icons.css';
 import './App.css';
 import github from './github.svg';
 import PlayQueue from './PlayQueue';
