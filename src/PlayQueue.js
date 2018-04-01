@@ -16,8 +16,8 @@ export default class PlayQueue {
 
     get values() { return this._array; }
 
-    add(element) {
-       return new PlayQueue([...this.values, element ]);
+    add(...elements) {
+       return new PlayQueue([...this.values, ...elements ]);
     }
 
     addFirst(element) {
