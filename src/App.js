@@ -110,8 +110,8 @@ class App extends Component {
                         this.selectBestOption(this.state.playQueue.values[0].id, startPlaying);
                     }
                 });
-                if(response.nextToken) {
-                    this.addYoutubePlaylist(startPlaying, response.nextToken);
+                if(response.nextPageToken) {
+                    this.addYoutubePlaylist(startPlaying, response.nextPageToken);
                 }
             },
             error: () => this.setState({ loading: false, error: true, errorMessage: "Cannot load videos from playlist..." })
@@ -171,16 +171,9 @@ class App extends Component {
                     e.codec = bits[0]; e.bitrate = parseInt(bits[1], 10);
                     if (e.codec !== "vorbis" && e.codec !== "opus")
                         e.codec = "m4a";
-                    switch (e.codec){
-                        case "opus": e.preference = 1; break;
-                        case "vorbis": e.preference = 2; break;
-                        case "m4a": e.preference = 3; break;
-                        default: break;
-                    }
                 });
-                response.sort(this.predicateBy("bitrate", true));
-                response.sort(this.predicateBy("preference"));
-                this.setState({ currentFormat: response[0].codec + "@" + response[0].bitrate + "k" });
+                response.sort(this.predicateBy("bps", true));
+                this.setState({ currentFormat: response[0].codec + "@~" + (response[0].bitrate ? response[0].bitrate : response[0].bps) + "kbps" });
                 this.loadAudioURL(youtubeVideoID, response[0].id, autoplay);
             },
             error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", error: true, errorMessage: "Video not found..." })
