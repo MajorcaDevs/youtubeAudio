@@ -4,6 +4,9 @@ import 'bootstrap/dist/css/bootstrap.css';
 import './App.css';
 import github from './github.svg';
 import PlayQueue from './PlayQueue';
+import keys from './keys.json';
+
+const { GOOGLE_API_KEY } = keys;
 
 class App extends Component {
     constructor (props) {
@@ -20,6 +23,7 @@ class App extends Component {
             nightMode: true,
             currentFormat: "",
             youtubeVideoID: "",
+            youtubePlaylistID: "",
             compatibility: this.checkFormats(),
             playQueue: new PlayQueue()
         });
@@ -41,31 +45,74 @@ class App extends Component {
 
     addToQueue(){
         this.setState({loading: true, error: false, errorMessage: ""});
-        $.ajax({
-            async: true,
-            type: "GET",
-            url: "https://yt-audio-api.herokuapp.com/api/" + this.state.youtubeVideoID,
-            success: (response) => {
-                this.setState({
-                    loading: false,
-                    playQueue: this.state.playQueue.add({
-                        id: this.state.youtubeVideoID,
-                        title: response.title
-                    })
-                });
-                if (this.state.playQueue.values.length === 1){
-                    this.selectBestOption(this.state.youtubeVideoID);
-                }
-            },
-            error: () => this.setState({ loading: false, error: true, errorMessage: "Video not found..." })
-        });
+        if(this.state.youtubeVideoID) {
+            $.ajax({
+                async: true,
+                type: "GET",
+                url: "https://yt-audio-api.herokuapp.com/api/" + this.state.youtubeVideoID,
+                success: (response) => {
+                    this.setState({
+                        loading: false,
+                        playQueue: this.state.playQueue.add({
+                            id: this.state.youtubeVideoID,
+                            title: response.title
+                        })
+                    }, () => {
+                        if (this.state.playQueue.values.length > 0){
+                            this.selectBestOption(this.state.youtubeVideoID);
+                        }
+                    });
+                },
+                error: () => this.setState({ loading: false, error: true, errorMessage: "Video not found..." })
+            });
+        } else if(this.state.youtubePlaylistID) {
+            this.addYoutubePlaylist();
+        }
     }
 
     playSong(){
-        this.setState({error: false, errorMessage: ""});
+        this.setState({
+            error: false,
+            errorMessage: "",
+            playQueue: !this.state.youtubeVideoID ? this.state.playQueue : this.state.playQueue.addFirst({
+                id: this.state.youtubeVideoID,
+                title: null
+            })
+        });
         if (this.state.youtubeVideoID) {
             this.selectBestOption(this.state.youtubeVideoID);
+        } else if(this.state.youtubePlaylistID) {
+            this.addYoutubePlaylist(true);
         }
+    }
+
+    addYoutubePlaylist(startPlaying = false, nextId = null) {
+        this.setState({ loading: true });
+        let url = `https://www.googleapis.com/youtube/v3/playlistItems?part=id,snippet&maxResults=50&playlistId=${this.state.youtubePlaylistID}&key=${GOOGLE_API_KEY}`;
+        if(nextId) url += `&pageToken=${nextId}`;
+        $.ajax({
+            url,
+            async: true,
+            type: 'GET',
+            success: response => {
+                this.setState({
+                    loading: !!response.nextToken,
+                    playQueue: this.state.playQueue.add(...response.items.map(item => ({ id: item.snippet.resourceId.videoId, title: item.snippet.title })))
+                }, () => {
+                    if(this.state.playQueue.values.length > 0) {
+                        this.setState({
+                            youtubeVideoID: this.state.playQueue.values[0].id,
+                            youtubeVideoTitle: this.state.playQueue.values[0].title
+                        });
+                        this.selectBestOption(this.state.playQueue.values[0].id, startPlaying);
+                    }
+                });
+                if(response.nextPageToken) {
+                    this.addYoutubePlaylist(startPlaying, response.nextPageToken);
+                }
+            },
+            error: () => this.setState({ loading: false, error: true, errorMessage: "Cannot load videos from playlist..." })
+        })
     }
 
     checkFormats(){
@@ -87,9 +134,13 @@ class App extends Component {
         let url = event.target.value.trim();
         let newState = {youtubeVideoURL: url};
         let youtubeVideoID = this.getYoutubeVideoID(url);
+        let youtubePlaylistID = this.getPlaylistID(url);
         if (youtubeVideoID !== null){
             newState.invalidURL = false;
             newState.youtubeVideoID = youtubeVideoID;
+        } else if(youtubePlaylistID !== null) {
+            newState.invalidURL = false;
+            newState.youtubePlaylistID = youtubePlaylistID;
         } else {
             newState.invalidURL = url.length !== 0;
         }
@@ -150,9 +201,15 @@ class App extends Component {
             type: "GET",
             url: "https://yt-audio-api.herokuapp.com/api/" + youtubeVideoID + "/" + formatID,
             success: (response) => {
-                this.setState({youtubeAudioURL: response.url, youtubeVideoTitle: response.title, loading: false});
+                this.setState({youtubeAudioURL: response.url, youtubeVideoTitle: response.title, loading: false}, () => {
+                    if(autoplay) {
+                        this.audioRef.current.oncanplay = e => {
+                            this.audioRef.current.play();
+                            this.audioRef.current.oncanplay = null;
+                        };
+                    }
+                });
                 $("title").text(this.state.youtubeVideoTitle + " - YouTube Audio");
-                if(autoplay) this.audioRef.current.play();
             },
             error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", error: true, errorMessage: "Video not found..." })
         });
@@ -169,6 +226,14 @@ class App extends Component {
         return null;
     }
 
+    getPlaylistID(url) {
+        let youtubePlaylistID = /playlist\?list=([A-Za-z0-9-_]+)/g.exec(url);
+        if(youtubePlaylistID !== null) {
+            return youtubePlaylistID[1]
+        }
+        return null;
+    }
+
     nightModeListener(event){
         event.preventDefault();
         this.setState({ nightMode: !this.state.nightMode });
@@ -179,14 +244,14 @@ class App extends Component {
         let seconds = time - (Math.floor(time/60)*60);
         time = Math.floor(time/60) + ":" + (seconds < 10 ? "0"+seconds : seconds);
         $("title").text(time + " - " + this.state.youtubeVideoTitle + " - YouTube Audio");
+    }
 
-        if(event.target.duration - event.target.currentTime < 0.1){
-            event.target.pause();
-            this.setState({playQueue: this.state.playQueue.deleteFirst()});
-            if (this.state.playQueue.values.length > 0){
+    onSongEnd(event) {
+        this.setState({ playQueue: this.state.playQueue.deleteFirst() }, () => {
+            if (this.state.playQueue.values.length > 0) {
                 this.selectBestOption(this.state.playQueue.values[0].id, true);
             }
-        }
+        });
     }
 
     render() {
@@ -252,7 +317,7 @@ class App extends Component {
                             }
                             { this.state.youtubeAudioURL ?
                                 <audio id="player" className="player" controls src={ youtubeAudioURL }
-                                       onTimeUpdate={ this.titleProgress } ref={this.audioRef} /> : null
+                                       onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd.bind(this) } /> : null
                             }
                         </div>
                     </div>
