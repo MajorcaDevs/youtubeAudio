@@ -227,7 +227,7 @@ class App extends Component {
     }
 
     getPlaylistID(url) {
-        let youtubePlaylistID = /(PL[A-Za-z0-9-]+)/g.exec(url);
+        let youtubePlaylistID = /playlist\?list=([A-Za-z0-9-_]+)/g.exec(url);
         if(youtubePlaylistID !== null) {
             return youtubePlaylistID[1]
         }
