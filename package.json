@@ -5,6 +5,7 @@
   "dependencies": {
     "ajv": "^6.0.0",
     "bootstrap": "^4.0.0",
+    "gh-pages": "^1.1.0",
     "jquery": "^3.3.1",
     "material-design-icons": "^3.0.1",
     "node-sass-chokidar": "^1.2.2",
@@ -23,9 +24,11 @@
     "build-js": "react-scripts build",
     "start-js": "react-scripts start",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
-  "homepage": "https://raul.ml/ytAudio/",
+  "homepage": "https://majorcadevs.github.io/youtubeAudio/",
   "devDependencies": {
     "eslint": "^4.19.1",
     "eslint-plugin-react": "^7.7.0"

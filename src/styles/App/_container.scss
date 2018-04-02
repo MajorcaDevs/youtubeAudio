@@ -177,16 +177,6 @@ body {
     box-shadow: none;
 }
 
-.btn {
-    .AppDark & {
-        background-color: #FFF;
-    }
-
-    .AppLight & {
-        background-color: #222;
-    }
-}
-
 /* Resonsive Design */
 
 @media only screen and (max-width: 575px) {
@@ -201,5 +191,15 @@ body {
     }
 
     #audioQuery { margin-top: 50px; }
+
+    .btn {
+        .AppDark & {
+            background-color: #FFF;
+        }
+
+        .AppLight & {
+            background-color: #222;
+        }
+    }
 
 }

@@ -284,7 +284,7 @@ class App extends Component {
                         */}
                             <div className="input-group" id="input">
                                 <div className="input-group-prepend">
-                                    <Button
+                                    <Button nightMode={ nightMode }
                                            id="test" name="test" value="TEST" onClick={ this.listenerTestButton }
                                            disabled={loading}/>
                                 </div>
@@ -295,13 +295,13 @@ class App extends Component {
                             </div>
                             <div className="row justify-content-center">
                                 <div className="btn-group mt-3">
-                                    <Button
+                                    <Button nightMode={ nightMode }
                                            id="test" name="Play Song" value="Play Now!" onClick={ this.playSong }
                                            disabled={loading}/>
-                                    <Button
+                                    <Button nightMode={ nightMode }
                                            id="test" name="Add to Queue" value="Enqueue" onClick={ this.addToQueue }
                                            disabled={loading}/>
-                                    <Button
+                                    <Button nightMode={ nightMode }
                                            id="test" name="Clear queueue" value="Clear Queue" onClick={ this.clear }
                                            disabled={loading}/>
                                 </div>
@@ -316,7 +316,7 @@ class App extends Component {
                             <PlayQueueList showing={ showingQueue } playQueue={ this.state.playQueue }/>
                         </div>
                     </div>
-                    <button id="playQueue" className={`btn ${showingQueue ? 'right' : 'left'}`}
+                    <button id="playQueue" className={`btn ${showingQueue ? 'right' : 'left'} btn-outline-${ nightMode ? 'light' : 'dark' }`}
                             onClick={ this.showQueue }>
                         <div id="arrow" className={`${showingQueue ? 'right' : 'left'}`}/>
                     </button>
@@ -341,7 +341,7 @@ const ShowIf = (name, func) => {
 }
 
 const Button = props => (
-    <input type="button" className={`btn`} {...props} />
+    <input type="button" className={`btn btn-outline-${ props.nightMode ? 'light' : 'dark' }`} {...props} />
 );
 
 const LoadingSpinner = ShowIf('show', ({ show }) => (
