@@ -108,6 +108,11 @@ body {
     @media (max-width: 575px) {
         position: absolute;
         top: 90px;
+
+        .AppLight & {
+            color: #343a40;
+            border-color: #343a40;
+        }
     }
 }
 
@@ -192,12 +197,20 @@ body {
 
     #audioQuery { margin-top: 50px; }
 
+    .btn-outline-dark {
+        background-color: #FFF;
+    }
+
+    .btn-outline-light {
+        background-color: #222;
+    }
+
     .btn {
-        .AppDark & {
+        .AppLight & {
             background-color: #FFF;
         }
 
-        .AppLight & {
+        .AppDark & {
             background-color: #222;
         }
     }
