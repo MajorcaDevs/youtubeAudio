@@ -107,11 +107,6 @@
   padding-bottom: 16px;
 }
 
-.alert {
-  display: none;
-  margin: 8px 0px;
-}
-
 .title{
   position: relative;
   height: 48px;

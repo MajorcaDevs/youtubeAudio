@@ -6,6 +6,7 @@ import './App.css';
 import github from './github.svg';
 import PlayQueue from './PlayQueue';
 import keys from './keys.json';
+// import AdBlockDetect from 'react-ad-block-detect';
 
 const { GOOGLE_API_KEY } = keys;
 
@@ -37,6 +38,8 @@ class App extends Component {
         this.playSong = this.playSong.bind(this);
         this.clear = this.clear.bind(this);
     }
+
+
 
     _testYoutubeVideoURL = "https://www.youtube.com/watch?v=bM7SZ5SBzyY";
 
@@ -270,6 +273,16 @@ class App extends Component {
                         Enjoy the audio from the youtube videos!</p>
                     <div className="d-flex row justify-content-center align-items-center" id="audioQuery">
                         <div className="col-md-6 col-sm-12">
+                        {/*
+                        ----
+                        Disabled until bug confirm
+                        ----
+                        <AdBlockDetect>
+                        <div className="alert alert-danger" role="alert">
+                          Please, consider disabling Ad-Block in order to make the website work properly
+                        </div>
+                        </AdBlockDetect>
+                        */}
                             <div className="input-group" id="input">
                                 <div className="input-group-prepend">
                                     <input type="button" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}`}
