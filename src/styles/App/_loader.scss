@@ -1,0 +1,17 @@
+.loader {
+    border-left: 4px solid #F6A532;
+    border-top: 4px solid #234398;
+    border-bottom: 4px solid #E94242;
+    border-right: 4px solid #1CACAC;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 0.25s linear infinite;
+    margin-top: 35px;
+    margin-bottom: 5px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg) }
+    100% { transform: rotate(360deg) }
+}

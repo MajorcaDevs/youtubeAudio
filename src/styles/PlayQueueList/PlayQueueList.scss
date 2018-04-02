@@ -1,4 +1,4 @@
-#playQueueList{
+#playQueueList {
     width: 90%;
     height: 100%;
     position: fixed;
@@ -6,42 +6,34 @@
     top: 75px;
     transition: background-color 1s, color 1s;
     animation: PlayQueueAnimation1 .4s ease-in-out;
-}
 
-@media (min-width: 576px) {
-    #playQueueList {
+    @media (min-width: 576px) {
         width: 288px;
         animation: PlayQueueAnimation2 .4s ease-in-out;
     }
-}
 
-@media (min-width: 768px) {
-    #playQueueList {
+    @media (min-width: 768px) {
         width: 384px;
         animation: PlayQueueAnimation3 .4s ease-in-out;
     }
-}
 
-@media (min-width: 992px) {
-    #playQueueList{
+    @media (min-width: 992px) {
         width: 384px;
         animation: PlayQueueAnimation3 .4s ease-in-out;
     }
-}
 
-@media (min-width: 1200px) {
-    #playQueueList{
+    @media (min-width: 1200px) {
         width: 400px;
         animation: PlayQueueAnimation4 .4s ease-in-out;
     }
-}
 
-.AppLight #playQueueList{
-    background-color: #d8d8d8;
-}
+    .AppLight & {
+        background-color: #d8d8d8;
+    }
 
-.AppDark #playQueueList{
-    background-color: #181818;
+    .AppDark & {
+        background-color: #181818;
+    }
 }
 
 @keyframes PlayQueueAnimation1 {

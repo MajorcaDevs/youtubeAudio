@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import './PlayQueueList.css';
+import './styles/PlayQueueList/PlayQueueList.css';
 
 
 export default class PlayQueueList extends Component{

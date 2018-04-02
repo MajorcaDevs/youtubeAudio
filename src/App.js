@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import $ from 'jquery';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'material-design-icons/iconfont/material-icons.css';
-import './App.css';
+import './styles/App/App.css';
 import github from './github.svg';
 import PlayQueue from './PlayQueue';
 import keys from './keys.json';
@@ -21,7 +21,6 @@ class App extends Component {
             youtubeAudioURL: "",
             youtubeVideoTitle: "",
             loading: false,
-            error: false,
             errorMessage: "",
             nightMode: true,
             currentFormat: "",
@@ -45,11 +44,11 @@ class App extends Component {
     _testYoutubeVideoURL = "https://www.youtube.com/watch?v=bM7SZ5SBzyY";
 
     clear(){
-        this.setState({playQueue: this.state.playQueue.emptyQueue(), error: false, errorMessage: ""});
+        this.setState({playQueue: this.state.playQueue.emptyQueue(), errorMessage: ""});
     }
 
     addToQueue(){
-        let newState = { error: false, errorMessage: "" };
+        let newState = { errorMessage: "" };
         if(this.state.youtubeVideoID) {
             newState.loading = true;
             $.ajax({
@@ -69,7 +68,7 @@ class App extends Component {
                         }
                     });
                 },
-                error: () => this.setState({ loading: false, error: true, errorMessage: "Video not found..." })
+                error: () => this.setState({ loading: false, errorMessage: "Video not found..." })
             });
         } else if(this.state.youtubePlaylistID) {
             newState.loading = true;
@@ -80,7 +79,6 @@ class App extends Component {
 
     playSong(){
         this.setState({
-            error: false,
             errorMessage: "",
             playQueue: !this.state.youtubeVideoID ? this.state.playQueue : this.state.playQueue.addFirst({
                 id: this.state.youtubeVideoID,
@@ -119,7 +117,7 @@ class App extends Component {
                     this.addYoutubePlaylist(startPlaying, response.nextPageToken);
                 }
             },
-            error: () => this.setState({ loading: false, error: true, errorMessage: "Cannot load videos from playlist..." })
+            error: () => this.setState({ loading: false, errorMessage: "Cannot load videos from playlist..." })
         })
     }
 
@@ -157,7 +155,7 @@ class App extends Component {
     }
 
     selectBestOption(youtubeVideoID, autoplay = false) {
-        setTimeout(() => this.setState({ loading: true, error: false, errorMessage: "" }));
+        setTimeout(() => this.setState({ loading: true, errorMessage: "" }));
         $.ajax({
             async: true,
             type: "GET",
@@ -168,7 +166,7 @@ class App extends Component {
                     .concat(response.filter(e => this.state.compatibility.vorbis && e.extra.startsWith('vorbis')))
                     .concat(response.filter(e => this.state.compatibility.opus && e.extra.startsWith('opus')));
                 if(response.length === 0){
-                    this.setState({ error: true, errorMessage: "Not compatible sources found for your browser", loading: false });
+                    this.setState({ errorMessage: "Not compatible sources found for your browser", loading: false });
                     return;
                 }
                 response.forEach(e => {
@@ -181,7 +179,7 @@ class App extends Component {
                 this.setState({ currentFormat: response[0].codec + "@~" + (response[0].bitrate ? response[0].bitrate : response[0].bps) + "kbps" });
                 this.loadAudioURL(youtubeVideoID, response[0].id, autoplay);
             },
-            error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", error: true, errorMessage: "Video not found..." })
+            error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "",  errorMessage: "Video not found..." })
         });
     }
 
@@ -212,7 +210,7 @@ class App extends Component {
                 });
                 $("title").text(this.state.youtubeVideoTitle + " - YouTube Audio");
             },
-            error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", error: true, errorMessage: "Video not found..." })
+            error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", errorMessage: "Video not found..." })
         });
     }
 
@@ -261,22 +259,17 @@ class App extends Component {
     }
 
     render() {
-        const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, error, errorMessage, nightMode,
+        const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, errorMessage, nightMode,
             showingQueue, currentFormat } = this.state;
         if(nightMode) $('body').addClass('AppDark').removeClass('AppLight');
         else $('body').removeClass('AppDark').addClass('AppLight');
         return (
-            <div className={`${nightMode ? 'AppDark' : 'AppLight'}`} id="AppContainer">
-                <header className="App-header" id="AppHeader">
-                    <h1 className="App-title">YouTube Audio Player</h1>
-                    <button className="btn btn-sm btn-outline-light float-right onoffmode" id="changeSkinButton" onClick={ this.nightModeListener }>
-                        { !nightMode ? <i className="material-icons">brightness_2</i> : <i className="material-icons">wb_sunny</i>}
-                    </button>
-                </header>
+            <div id="AppContainer">
+                <Header nightMode={ nightMode } nightModeListener={ this.nightModeListener } />
                 <div className="container-fluid">
-                    <PlayQueueList showing={ showingQueue } playQueue={ this.state.playQueue }/>
                     <p className="greyText" id="greyText">
-                        Enjoy the audio from the youtube videos!</p>
+                        Enjoy the audio from the youtube videos!
+                    </p>
                     <div className="d-flex row justify-content-center align-items-center" id="audioQuery">
                         <div className="col-md-6 col-sm-12">
                         {/*
@@ -291,7 +284,7 @@ class App extends Component {
                         */}
                             <div className="input-group" id="input">
                                 <div className="input-group-prepend">
-                                    <input type="button" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}`}
+                                    <Button
                                            id="test" name="test" value="TEST" onClick={ this.listenerTestButton }
                                            disabled={loading}/>
                                 </div>
@@ -302,78 +295,114 @@ class App extends Component {
                             </div>
                             <div className="row justify-content-center">
                                 <div className="btn-group mt-3">
-                                    <input type="button" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}`}
+                                    <Button
                                            id="test" name="Play Song" value="Play Now!" onClick={ this.playSong }
                                            disabled={loading}/>
-                                    <input type="button" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}`}
+                                    <Button
                                            id="test" name="Add to Queue" value="Enqueue" onClick={ this.addToQueue }
                                            disabled={loading}/>
-                                    <input type="button" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}`}
+                                    <Button
                                            id="test" name="Clear queueue" value="Clear Queue" onClick={ this.clear }
                                            disabled={loading}/>
                                 </div>
                             </div>
-                            { loading ?
-                                <div className="row justify-content-center">
-                                    <div className="title loading" id="stateText">
-                                        Loading...
-                                    </div>
-                                    <div className="loader"/>
-                                </div>
-                                    : null
-                            }
-                            { error ?
-                                <button className="title error" id="stateText">
-                                    { errorMessage }
-                                </button> : null
-                            }
-                            { this.state.youtubeVideoTitle ?
-                                <div className="title" id="stateText">
-                                    <div id="NowPlaying">
-                                        Now Playing: ({ currentFormat })
-                                    </div>
-                                    <div id="title" className="text-center"> { youtubeVideoTitle } </div>
-                                </div> : null
-                            }
+                            <LoadingSpinner show={loading} />
+                            <ErrorMessage message={errorMessage} />
+                            <NowPlayingText title={youtubeVideoTitle} currentFormat={currentFormat} />
                             { this.state.youtubeAudioURL ?
                                 <audio id="player" className="player" controls src={ youtubeAudioURL }
                                        onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd.bind(this) } /> : null
                             }
+                            <PlayQueueList showing={ showingQueue } playQueue={ this.state.playQueue }/>
                         </div>
                     </div>
-                    <button id="playQueue" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}
-                            ${showingQueue ? 'right' : 'left'}`}
+                    <button id="playQueue" className={`btn ${showingQueue ? 'right' : 'left'}`}
                             onClick={ this.showQueue }>
                         <div id="arrow" className={`${showingQueue ? 'right' : 'left'}`}/>
                     </button>
                 </div>
-                <footer className="App-footer footer" id="AppFooter">
-                    <div className="App-footer row" id="FooterContent">
-                        <a href="https://github.com/RaulWhite/youtubeAudio" target="_blank" rel="noopener noreferrer"
-                            className="col-4">
-                            <img alt="GitHub" src={github} id="githubLogo" className={!nightMode ? "githubDay" : null}/>
-                            &nbsp;GitHub repository
-                        </a>
-                        <div className="App-footer col-4" id="FooterContent">
-                            Uses <a href="https://github.com/melchor629/youtubedl-audio-api"
-                                    target="_blank" rel="noopener noreferrer">YoutubeDL audio API</a>
-                        </div>
-                        <div className="App-footer col-4" id="FooterContent">
-                            Made by:&nbsp;
-                            <a href="https://github.com/raulwhite" target="_blank" rel="noopener noreferrer">
-                                Raul White
-                            </a>,&nbsp;
-                            <a href="http://alkesst.github.io" target="_blank" rel="noopener noreferrer">
-                                Alkesst
-                            </a>&nbsp;&amp;&nbsp;
-                            <a href="http://melchor9000.me" target="_blank" rel="noopener noreferrer">
-                                Melchor9000
-                            </a>
-                        </div>
-                    </div>
-                </footer>
+
+                <Footer />
             </div>
         );
     }
 }
+
+//Decorador que permite que un componente se muestre o no cuando
+//una propiedad (`prop') existe.
+const ShowIf = (name, func) => {
+    return props => {
+        if(props[name]) {
+            return func(props);
+        } else {
+            return null;
+        }
+    }
+}
+
+const Button = props => (
+    <input type="button" className={`btn`} {...props} />
+);
+
+const LoadingSpinner = ShowIf('show', ({ show }) => (
+    <div className="row justify-content-center">
+        <div className="title loading" id="stateText">
+            Loading...
+        </div>
+        <div className="loader"/>
+    </div>
+));
+
+const ErrorMessage = ShowIf('message', ({ message }) => (
+    <button className="title error" id="stateText">
+        { message }
+    </button>
+));
+
+const NowPlayingText = ShowIf('title', ({ title, currentFormat }) => (
+    <div className="title" id="stateText">
+        <div id="NowPlaying">
+            Now Playing: ({ currentFormat })
+        </div>
+        <div id="title" className="text-center"> { title } </div>
+    </div>
+));
+
+const Header = ({ nightMode, nightModeListener }) => (
+    <header className="AppHeader" id="AppHeader">
+        <h1 className="App-title">YouTube Audio Player</h1>
+        <button className="btn btn-sm btn-outline-light float-right onoffmode" id="changeSkinButton" onClick={ nightModeListener }>
+            { !nightMode ? <i className="material-icons">brightness_2</i> : <i className="material-icons">wb_sunny</i>}
+        </button>
+    </header>
+);
+
+const Footer = () => (
+    <footer className="AppFooter footer" id="AppFooter">
+        <div className="row" id="FooterContent">
+            <a href="https://github.com/RaulWhite/youtubeAudio" target="_blank" rel="noopener noreferrer"
+                className="col-4">
+                <img alt="GitHub" src={github} id="githubLogo" />
+                &nbsp;GitHub repository
+            </a>
+            <div className="col-4" id="FooterContent">
+                Uses <a href="https://github.com/melchor629/youtubedl-audio-api"
+                        target="_blank" rel="noopener noreferrer">YoutubeDL audio API</a>
+            </div>
+            <div className="col-4" id="FooterContent">
+                Made by:&nbsp;
+                <a href="https://github.com/raulwhite" target="_blank" rel="noopener noreferrer">
+                    Raul White
+                </a>,&nbsp;
+                <a href="http://alkesst.github.io" target="_blank" rel="noopener noreferrer">
+                    Alkesst
+                </a>&nbsp;&amp;&nbsp;
+                <a href="http://melchor9000.me" target="_blank" rel="noopener noreferrer">
+                    Melchor9000
+                </a>
+            </div>
+        </div>
+    </footer>
+);
+
 export default App;

@@ -1,0 +1,16 @@
+.AppHeader {
+    height: 75px;
+    padding: 20px;
+    color: white;
+    transition: background-color 1s;
+
+    .AppDark & {
+        background-color: #535353;
+    }
+
+    .AppLight & {
+        background-color: #222;
+    }
+
+    .App-title { font-size: 1.5em; }
+}

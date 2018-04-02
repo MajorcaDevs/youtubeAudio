@@ -1,0 +1,205 @@
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 75px;
+    transition: background-color 1s;
+}
+
+#AppContainer {
+    font-family: 'Titillium Web', sans-serif;
+    text-align: center;
+    transition: background-color 1s;
+}
+
+.AppDark {
+    background-color: #222;
+    color: white;
+}
+
+.AppLight {
+    background-color: white;
+    color: #222;
+}
+
+
+.player {
+    width: 100%;
+    height: 72px;
+    padding-bottom: 16px;
+}
+
+.title {
+    position: relative;
+    height: 48px;
+    overflow: hidden;
+
+    & > #title {
+        position: absolute;
+        bottom: 4px;
+        white-space: nowrap;
+        min-width: 100%;
+        height: 25px;
+        margin: 0;
+        transform: translateX(100%);
+        animation: title 30s linear -15s infinite;
+    }
+}
+
+@keyframes title {
+    0% { transform: translateX(100%) }
+    35% { transform: translateX(0%) }
+    65% { transform: translateX(0%) }
+    100% { transform: translateX(-100%) }
+}
+
+.error {
+    color: #ff0000;
+    border-radius: 10px;
+    transition: background-color 1s;
+    border-color: #ff0000;
+
+    .AppDark & {
+        background-color: #230000;
+    }
+
+    .AppLight & {
+        background-color: transparent;
+    }
+}
+
+.loading {
+    right: 5px;
+}
+
+#audioQuery { margin-top: 100px; }
+
+#greyText {
+    margin-top: 100px;
+    font-size: 20px;
+    transition: color 1s;
+
+    .AppLight & {
+        color: #575757;
+    }
+
+    .AppDark & {
+        color: dimgrey;
+    }
+}
+
+#stateText {
+    margin-top: 35px;
+    margin-bottom: 5px;
+    transition: color 1s;
+}
+
+#changeSkinButton {
+    position: fixed;
+    top: 17.5px;
+    right: 17.5px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 5px;
+    padding-bottom: 0px;
+
+    @media (max-width: 575px) {
+        position: absolute;
+        top: 90px;
+    }
+}
+
+#NowPlaying {
+    margin-bottom: 10px;
+}
+
+#playQueue {
+    position: fixed;
+    bottom: 90px;
+    right: 15px;
+    transition: border 0.15s,
+        left .4s ease-in-out,
+        right .4s ease-in-out,
+        border-color 1s;
+
+    & > #arrow {
+        border: solid black;
+        border-width: 0 3px 3px 0;
+        display: inline-block;
+        padding: 3px;
+    }
+
+    &.left {
+        & > #arrow {
+            transform: rotate(135deg);
+        }
+    }
+
+    &.right {
+        & > #arrow {
+            transform: rotate(-45deg);
+        }
+
+        @media (max-width: 575px) { right: initial; left: 15px }
+        @media (min-width: 576px) { right: 303px }
+        @media (min-width: 992px) { right: 399px }
+        @media (min-width: 1200px) { right: 415px }
+    }
+
+    @media (max-width: 575px) { bottom: 15px }
+
+    .AppLight & {
+        > #arrow {
+            border: solid #111;
+            border-width: 0 3px 3px 0;
+        }
+
+        &:hover > #arrow {
+            border-color: white;
+        }
+    }
+
+    .AppDark & {
+        > #arrow {
+            border: solid white;
+            border-width: 0 3px 3px 0;
+        }
+
+        &:hover > #arrow {
+            border-color: #111;
+        }
+    }
+}
+
+.btn:focus {
+    box-shadow: none;
+}
+
+.btn {
+    .AppDark & {
+        background-color: #FFF;
+    }
+
+    .AppLight & {
+        background-color: #222;
+    }
+}
+
+/* Resonsive Design */
+
+@media only screen and (max-width: 575px) {
+    .onoffmode:hover{
+        background-color: #222;
+        color: inherit;
+    }
+
+    #greyText{
+        margin-top: 70px;
+        font-size: 20px;
+    }
+
+    #audioQuery { margin-top: 50px; }
+
+}

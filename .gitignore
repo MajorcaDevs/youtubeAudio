@@ -5,3 +5,4 @@ build/
 .eslintrc.js
 package-lock.json
 yarn.lock
+src/styles/**/*.css

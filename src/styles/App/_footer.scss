@@ -1,0 +1,54 @@
+.AppFooter {
+    height: 75px;
+    padding: 20px;
+    transition: background-color 1s;
+    bottom: 0;
+    width: 100%;
+    position: absolute;
+    text-align: center;
+
+    .AppDark & {
+        background-color: #181818;
+        color: #979797;
+
+        & a {
+            color: #747474;
+
+            &:hover {
+                color: #505050;
+                text-decoration: none;
+            }
+        }
+    }
+
+    .AppLight & {
+        background-color: #d8d8d8;
+        color: #5e5e5e;
+
+        & a {
+            color: #5d5d5d;
+
+            &:hover {
+                color: #343434;
+                text-decoration: none;
+            }
+        }
+    }
+
+    #FooterContent {
+        transition: background-color 1s;
+        padding: 3px;
+    }
+
+    @media only screen and (max-width: 576px) {
+        display: none;
+    }
+}
+
+#githubLogo {
+    width: 26px;
+    height: 26px;
+    transition: filter 1s;
+
+    .AppLight & { filter: invert(1) }
+}
