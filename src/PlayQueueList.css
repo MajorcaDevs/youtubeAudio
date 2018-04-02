@@ -1,6 +1,39 @@
 #playQueueList{
-    width: 33%;
+    width: 90%;
     height: 100%;
+    position: fixed;
+    right: 0;
+    top: 75px;
+    transition: background-color 1s, color 1s;
+    animation: PlayQueueAnimation1 .4s ease-in-out;
+}
+
+@media (min-width: 576px) {
+    #playQueueList {
+        width: 288px;
+        animation: PlayQueueAnimation2 .4s ease-in-out;
+    }
+}
+
+@media (min-width: 768px) {
+    #playQueueList {
+        width: 384px;
+        animation: PlayQueueAnimation3 .4s ease-in-out;
+    }
+}
+
+@media (min-width: 992px) {
+    #playQueueList{
+        width: 384px;
+        animation: PlayQueueAnimation3 .4s ease-in-out;
+    }
+}
+
+@media (min-width: 1200px) {
+    #playQueueList{
+        width: 400px;
+        animation: PlayQueueAnimation4 .4s ease-in-out;
+    }
 }
 
 .AppLight #playQueueList{
@@ -9,4 +42,24 @@
 
 .AppDark #playQueueList{
     background-color: #181818;
+}
+
+@keyframes PlayQueueAnimation1 {
+    from { right: -90% }
+    to { right: 0 }
+}
+
+@keyframes PlayQueueAnimation2 {
+    from { right: -288px }
+    to { right: 0 }
+}
+
+@keyframes PlayQueueAnimation3 {
+    from { right: -384px }
+    to { right: 0 }
+}
+
+@keyframes PlayQueueAnimation4 {
+    from { right: -400px }
+    to { right: 0 }
 }

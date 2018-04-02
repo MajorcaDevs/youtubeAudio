@@ -258,8 +258,10 @@ class App extends Component {
     render() {
         const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, error, errorMessage, nightMode,
             showingQueue, currentFormat } = this.state;
+        if(nightMode) $('body').addClass('AppDark').removeClass('AppLight');
+        else $('body').removeClass('AppDark').addClass('AppLight');
         return (
-            <div className={`${nightMode ? 'AppDark' : 'AppLight'} fill`} id="AppContainer">
+            <div className={`${nightMode ? 'AppDark' : 'AppLight'}`} id="AppContainer">
                 <header className="App-header" id="AppHeader">
                     <h1 className="App-title">YouTube Audio Player</h1>
                     <button className="btn btn-outline-light" id="changeSkinButton" onClick={ this.nightModeListener }>
@@ -322,12 +324,13 @@ class App extends Component {
                                 <audio id="player" className="player" controls src={ youtubeAudioURL }
                                        onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd.bind(this) } /> : null
                             }
-                            <button id="playQueue" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}`}
-                                    onClick={ this.showQueue }>
-                                <div id="arrow" className={`${showingQueue ? 'right' : 'left'}`}/>
-                            </button>
                         </div>
                     </div>
+                    <button id="playQueue" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}
+                            ${showingQueue ? 'right' : 'left'}`}
+                            onClick={ this.showQueue }>
+                        <div id="arrow" className={`${showingQueue ? 'right' : 'left'}`}/>
+                    </button>
                 </div>
                 <footer className="App-footer" id="AppFooter">
                     <div className="App-footer row" id="FooterContent">

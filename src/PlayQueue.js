@@ -9,6 +9,7 @@ export default class PlayQueue {
             if (playQueueJSONString !== null){
                 this._array = playQueueJSONString;
             } else {
+                this._array = [];
                 this._store();
             }
         }

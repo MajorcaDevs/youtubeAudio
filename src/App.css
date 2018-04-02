@@ -11,6 +11,15 @@
   color: white;
 }
 
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 75px;
+}
+
 .AppLight{
   background-color: white;
   color: #222;
@@ -29,7 +38,7 @@
   transition: background-color 1s;
   bottom: 0;
   width: 100%;
-  position: fixed;
+  position: absolute;
   text-align: center;
 }
 
@@ -180,8 +189,9 @@
 }
 
 #changeSkinButton {
-  position: fixed;
-  top: 20px;
+  float: right;
+  position: relative;
+  bottom: 100%;
   right: 20px;
   min-width: 110px;
 }
@@ -195,21 +205,57 @@
   border-width: 0 3px 3px 0;
   display: inline-block;
   padding: 3px;
-  transition: border 0.15s;
 }
 
-#arrow.right{
+.right #arrow{
   transform: rotate(-45deg);
   -webkit-transform: rotate(-45deg);
 }
 
-.AppLight #playQueue:hover div#arrow{
-  border-color: white;
-}
-
-#arrow.left{
+.left #arrow{
   transform: rotate(135deg);
   -webkit-transform: rotate(135deg);
+}
+
+#playQueue {
+  position: fixed;
+  bottom: 90px;
+  right: 15px;
+  transition: border 0.15s, left .4s ease-in-out, right .4s ease-in-out;
+}
+
+@media(max-width: 575px) {
+  #playQueue.right {
+    left: 15px;
+  }
+}
+
+@media (min-width: 576px) {
+    #playQueue.right{
+      right: 303px;
+    }
+}
+
+@media (min-width: 768px) {
+  #playQueue.right{
+    right: 399px;
+  }
+}
+
+@media (min-width: 992px) {
+  #playQueue.right{
+    right: 399px;
+  }
+}
+
+@media (min-width: 1200px) {
+  #playQueue.right{
+    right: 415px;
+  }
+}
+
+.AppLight #playQueue:hover div#arrow{
+  border-color: white;
 }
 
 .AppLight #arrow {
