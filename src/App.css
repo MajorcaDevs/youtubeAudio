@@ -116,11 +116,6 @@ body {
   padding-bottom: 16px;
 }
 
-.alert {
-  display: none;
-  margin: 8px 0px;
-}
-
 .title{
   position: relative;
   height: 48px;
@@ -189,11 +184,13 @@ body {
 }
 
 #changeSkinButton {
-  float: right;
-  position: relative;
-  bottom: 100%;
-  right: 20px;
-  min-width: 110px;
+  position: fixed;
+  top: 17.5px;
+  right: 17.5px;
+  padding-left: 6px;
+  padding-right: 6px;
+  padding-top: 5px;
+  padding-bottom: 0px;
 }
 
 #NowPlaying {
@@ -270,4 +267,43 @@ body {
 
 .AppDark #playQueue:hover div#arrow{
   border-color: black;
+}
+
+
+.btn:focus {
+  box-shadow: none;
+}
+
+/* Resonsive Design */
+
+@media only screen and (max-width: 480px) {
+  #changeSkinButton {
+    position: absolute;
+    top: 90px;
+  }
+
+  .btn-outline-dark {
+    background-color: #FFF;
+  }
+
+  .btn-outline-light {
+    background-color: #222;
+  }
+
+  .onoffmode:hover{
+    background-color: #222;
+    color: inherit;
+  }
+
+  #greyText{
+    margin-top: 70px;
+    font-size: 20px;
+  }
+
+  #audioQuery { margin-top: 50px; }
+
+  .footer{
+    display: none;
+  }
+
 }

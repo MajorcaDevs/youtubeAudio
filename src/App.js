@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import $ from 'jquery';
 import 'bootstrap/dist/css/bootstrap.css';
+import 'material-design-icons/iconfont/material-icons.css';
 import './App.css';
 import github from './github.svg';
 import PlayQueue from './PlayQueue';
 import keys from './keys.json';
 import PlayQueueList from './PlayQueueList';
+// import AdBlockDetect from 'react-ad-block-detect';
 
 const { GOOGLE_API_KEY } = keys;
 
@@ -264,8 +266,8 @@ class App extends Component {
             <div className={`${nightMode ? 'AppDark' : 'AppLight'}`} id="AppContainer">
                 <header className="App-header" id="AppHeader">
                     <h1 className="App-title">YouTube Audio Player</h1>
-                    <button className="btn btn-outline-light" id="changeSkinButton" onClick={ this.nightModeListener }>
-                        { !nightMode ? "Night Mode" : "Day mode"}
+                    <button className="btn btn-sm btn-outline-light float-right onoffmode" id="changeSkinButton" onClick={ this.nightModeListener }>
+                        { !nightMode ? <i className="material-icons">brightness_2</i> : <i className="material-icons">wb_sunny</i>}
                     </button>
                 </header>
                 <div className="container-fluid">
@@ -274,6 +276,16 @@ class App extends Component {
                         Enjoy the audio from the youtube videos!</p>
                     <div className="d-flex row justify-content-center align-items-center" id="audioQuery">
                         <div className="col-md-6 col-sm-12">
+                        {/*
+                        ----
+                        Disabled until bug confirm
+                        ----
+                        <AdBlockDetect>
+                        <div className="alert alert-danger" role="alert">
+                          Please, consider disabling Ad-Block in order to make the website work properly
+                        </div>
+                        </AdBlockDetect>
+                        */}
                             <div className="input-group" id="input">
                                 <div className="input-group-prepend">
                                     <input type="button" className={`btn btn-outline-${nightMode ? 'light' : 'dark'}`}
@@ -332,7 +344,7 @@ class App extends Component {
                         <div id="arrow" className={`${showingQueue ? 'right' : 'left'}`}/>
                     </button>
                 </div>
-                <footer className="App-footer" id="AppFooter">
+                <footer className="App-footer footer" id="AppFooter">
                     <div className="App-footer row" id="FooterContent">
                         <a href="https://github.com/RaulWhite/youtubeAudio" target="_blank" rel="noopener noreferrer"
                             className="col-4">
