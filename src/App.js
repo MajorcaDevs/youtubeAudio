@@ -44,8 +44,9 @@ class App extends Component {
     }
 
     addToQueue(){
-        this.setState({loading: true, error: false, errorMessage: ""});
+        let newState = { error: false, errorMessage: "" };
         if(this.state.youtubeVideoID) {
+            newState.loading = true;
             $.ajax({
                 async: true,
                 type: "GET",
@@ -66,8 +67,10 @@ class App extends Component {
                 error: () => this.setState({ loading: false, error: true, errorMessage: "Video not found..." })
             });
         } else if(this.state.youtubePlaylistID) {
+            newState.loading = true;
             this.addYoutubePlaylist();
         }
+        this.setState(newState);
     }
 
     playSong(){
