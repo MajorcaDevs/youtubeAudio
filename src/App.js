@@ -378,29 +378,12 @@ const Header = ({ nightMode, nightModeListener }) => (
 );
 
 const Footer = () => (
-    <footer className="AppFooter footer" id="AppFooter">
-        <div className="row" id="FooterContent">
-            <a href="https://github.com/RaulWhite/youtubeAudio" target="_blank" rel="noopener noreferrer"
-                className="col-4">
-                <img alt="GitHub" src={github} id="githubLogo" />
-                &nbsp;GitHub repository
+    <footer className="AppFooter footer align-items-center" id="AppFooter">
+        <div id="FooterContent">
+            <a href="https://github.com/MajorcaDevs/youtubeAudio" target="_blank" rel="noopener noreferrer">
+                <img alt="GitHub" src={github} id="githubLogo" className="mr-1" />
+                &nbsp;Made by <b>MajorcaDevs</b> with <b>{"<3"}</b>
             </a>
-            <div className="col-4" id="FooterContent">
-                Uses <a href="https://github.com/melchor629/youtubedl-audio-api"
-                        target="_blank" rel="noopener noreferrer">YoutubeDL audio API</a>
-            </div>
-            <div className="col-4" id="FooterContent">
-                Made by:&nbsp;
-                <a href="https://github.com/raulwhite" target="_blank" rel="noopener noreferrer">
-                    Raul White
-                </a>,&nbsp;
-                <a href="http://alkesst.github.io" target="_blank" rel="noopener noreferrer">
-                    Alkesst
-                </a>&nbsp;&amp;&nbsp;
-                <a href="http://melchor9000.me" target="_blank" rel="noopener noreferrer">
-                    Melchor9000
-                </a>
-            </div>
         </div>
     </footer>
 );
