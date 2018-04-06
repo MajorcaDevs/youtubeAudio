@@ -18,11 +18,11 @@ that uses `youtube-dl` to get the audio only URL from a YouTube video.
 Once you cloned the repository, just run `npm install`. To run the web use `npm run` and enjoy!  
 
 ### Demo  
-You can try the web app in this [page](https://raul.ml/ytAudio/).  
+You can try the web app in this [page](https://majorcadevs.github.io/youtubeAudio/).  
   
 ### Authors  
   
-[Raúl White](https://github.com/raulwhite), [Melchor9000](http://melchor9000.me), [Alkesst](http://alkesst.github.io/) & [Amgxv](http://amgxv.tech)
+[RaulWhite](https://github.com/raulwhite), [Melchor9000](http://melchor9000.me), [Alkesst](http://alkesst.github.io/) & [Amgxv](http://amgxv.tech)
 
 ### License  
 This repository is under the MIT License. 
