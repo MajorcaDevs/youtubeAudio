@@ -63,7 +63,7 @@ class App extends Component {
                             title: response.title
                         })
                     }, () => {
-                        if (this.state.playQueue.values.length > 0){
+                        if (this.state.playQueue.values.length && !this.state.youtubeAudioURL){
                             this.selectBestOption(this.state.youtubeVideoID);
                         }
                     });

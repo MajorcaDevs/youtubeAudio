@@ -50,7 +50,7 @@ export default class PlayQueue {
 
     _obtain() {
         let value = window.sessionStorage.getItem('playQueue');
-        return value ? JSON.stringify(value) : value;
+        return value ? JSON.parse(value) : value;
     }
 
 }
