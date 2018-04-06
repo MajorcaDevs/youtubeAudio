@@ -35,8 +35,10 @@ class App extends Component {
         this.nightModeListener = this.nightModeListener.bind(this);
         this.titleProgress = this.titleProgress.bind(this);
         this.listenerForm = this.listenerForm.bind(this);
+        this.onSongError = this.onSongError.bind(this);
         this.addToQueue = this.addToQueue.bind(this);
         this.showQueue = this.showQueue.bind(this);
+        this.onSongEnd = this.onSongEnd.bind(this);
         this.playSong = this.playSong.bind(this);
         this.clear = this.clear.bind(this);
     }
@@ -176,7 +178,10 @@ class App extends Component {
                         e.codec = "m4a";
                 });
                 response.sort(this.predicateBy("bps", true));
-                this.setState({ currentFormat: response[0].codec + "@~" + (response[0].bitrate ? response[0].bitrate : response[0].bps) + "kbps" });
+                this.setState({
+                    currentFormat: response[0].codec + "@~" + (response[0].bitrate ? response[0].bitrate : response[0].bps) + "kbps",
+                    qualityFromAudio: response[0].id
+                });
                 this.loadAudioURL(youtubeVideoID, response[0].id, autoplay);
             },
             error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "",  errorMessage: "Video not found..." })
@@ -253,6 +258,25 @@ class App extends Component {
         });
     }
 
+    onSongError(event) {
+        console.log(event.target.error.code);
+        switch(event.target.error.code) {
+        case event.target.error.MEDIA_ERR_NETWORK:
+            this.setState({ errorMessage: 'There was an network error' });
+            break;
+
+        case event.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED: {
+            const { youtubeVideoID, qualityFromAudio } = this.state;
+            this.setState({
+                youtubeAudioURL: `https://yt-audio-api.herokuapp.com/api/${youtubeVideoID}/${qualityFromAudio}/passthrough`
+            });
+            break;
+        }
+
+        default: return;
+        }
+    }
+
     showQueue(event) {
         event.preventDefault();
         this.setState({showingQueue: !this.state.showingQueue});
@@ -260,7 +284,7 @@ class App extends Component {
 
     render() {
         const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, errorMessage, nightMode,
-            showingQueue, currentFormat } = this.state;
+            showingQueue, currentFormat, playQueue } = this.state;
         if(nightMode) $('body').addClass('AppDark').removeClass('AppLight');
         else $('body').removeClass('AppDark').addClass('AppLight');
         return (
@@ -303,15 +327,15 @@ class App extends Component {
                                            disabled={loading}/>
                                     <Button nightMode={ nightMode }
                                            id="test" name="Clear queueue" value="Clear Queue" onClick={ this.clear }
-                                           disabled={loading}/>
+                                           disabled={loading || playQueue.values.length < 2}/>
                                 </div>
                             </div>
                             <LoadingSpinner show={loading} />
                             <ErrorMessage message={errorMessage} />
                             <NowPlayingText title={youtubeVideoTitle} currentFormat={currentFormat} />
                             { this.state.youtubeAudioURL ?
-                                <audio id="player" className="player" controls src={ youtubeAudioURL }
-                                       onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd.bind(this) } /> : null
+                                <audio id="player" className="player" controls src={ youtubeAudioURL } onError={ this.onSongError }
+                                       onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd } /> : null
                             }
                             <PlayQueueList showing={ showingQueue } playQueue={ this.state.playQueue }/>
                         </div>
