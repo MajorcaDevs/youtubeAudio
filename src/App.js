@@ -7,6 +7,7 @@ import github from './github.svg';
 import PlayQueue from './PlayQueue';
 import keys from './keys.json';
 import PlayQueueList from './PlayQueueList';
+import { Lastfm, parseTitle } from './LastFM';
 // import AdBlockDetect from 'react-ad-block-detect';
 
 const { GOOGLE_API_KEY } = keys;
@@ -28,9 +29,11 @@ class App extends Component {
             showingQueue: false,
             youtubePlaylistID: "",
             compatibility: this.checkFormats(),
-            playQueue: new PlayQueue()
+            playQueue: new PlayQueue(),
+            scrobblingState: 'none', // 'none', 'nowPlaying', 'scrobbled'
         });
         this.audioRef = React.createRef();
+        this.lastfm = new Lastfm(); window.xd = () => this.lastfm.startAuthentication();
         this.listenerTestButton = this.listenerTestButton.bind(this);
         this.nightModeListener = this.nightModeListener.bind(this);
         this.titleProgress = this.titleProgress.bind(this);
@@ -88,7 +91,7 @@ class App extends Component {
             })
         });
         if (this.state.youtubeVideoID) {
-            this.selectBestOption(this.state.youtubeVideoID);
+            this.selectBestOption(this.state.youtubeVideoID, true);
         } else if(this.state.youtubePlaylistID) {
             this.addYoutubePlaylist(true);
         }
@@ -205,10 +208,15 @@ class App extends Component {
             type: "GET",
             url: "https://yt-audio-api.herokuapp.com/api/" + youtubeVideoID + "/" + formatID,
             success: (response) => {
-                this.setState({youtubeAudioURL: response.url, youtubeVideoTitle: response.title, loading: false}, () => {
+                this.setState({
+                    youtubeAudioURL: response.url,
+                    youtubeVideoTitle: response.title,
+                    loading: false,
+                    scrobblingState: 'none'
+                }, () => {
                     if(autoplay) {
                         this.audioRef.current.oncanplay = e => {
-                            this.audioRef.current.play();
+                            this.audioRef.current.play().catch(reason => console.error(reason));
                             this.audioRef.current.oncanplay = null;
                         };
                     }
@@ -244,14 +252,55 @@ class App extends Component {
     }
 
     titleProgress(event){
-        let time = Math.round(event.target.currentTime);
+        const currentTime = event.target.currentTime;
+        let duration = event.target.duration;
+        let time = Math.round(currentTime);
         let seconds = time - (Math.floor(time/60)*60);
         time = Math.floor(time/60) + ":" + (seconds < 10 ? "0"+seconds : seconds);
         $("title").text(time + " - " + this.state.youtubeVideoTitle + " - YouTube Audio");
+
+        if(navigator.userAgent.indexOf('Safari/') !== -1) {
+            //Workaround for Safari m4a playing bug
+            duration /= 2;
+        }
+
+        if(this.lastfm.hasLoggedIn) {
+            if(this.state.scrobblingState === 'none') {
+                const parsed = parseTitle(this.state.youtubeVideoTitle);
+                if(parsed) {
+                    this.setState({ scrobblingState: null });
+                    this.lastfm.updateNowPlaying({
+                        ...parsed,
+                        duration,
+                        timestamp: new Date()
+                    }).then(() => this.setState({ scrobblingState: 'nowPlaying' }));
+                } else {
+                    this.setState({ scrobblingState: 'nowPlaying' });
+                }
+            } else if(this.state.scrobblingState === 'nowPlaying' && currentTime >= Math.min(duration, 240)) {
+                const parsed = parseTitle(this.state.youtubeVideoTitle);
+                if(parsed) {
+                    this.setState({ scrobblingState: null });
+                    this.lastfm.scrobble({
+                        ...parsed,
+                        duration,
+                        timestamp: new Date()
+                    }).then(() => this.setState({ scrobblingState: 'scrobbled' }));
+                } else {
+                    this.setState({ scrobblingState: 'scrobbled' });
+                }
+            }
+        }
+
+        if(currentTime > duration && currentTime - duration > 1) {
+            //Workaround for Safari m4a playing bug
+            console.log("FORCE NEXT");
+            this.onSongEnd(null);
+        }
     }
 
     onSongEnd(event) {
-        this.setState({ playQueue: this.state.playQueue.deleteFirst() }, () => {
+        this.setState({ playQueue: this.state.playQueue.deleteFirst(), scrobblingState: 'none' }, () => {
             if (this.state.playQueue.values.length > 0) {
                 this.selectBestOption(this.state.playQueue.values[0].id, true);
             }
@@ -364,9 +413,11 @@ const ShowIf = (name, func) => {
     }
 }
 
-const Button = props => (
-    <input type="button" className={`btn btn-outline-${ props.nightMode ? 'light' : 'dark' }`} {...props} />
-);
+const Button = props => {
+    let lprops = {...props};
+    delete lprops.nightMode;
+    return <input type="button" className={`btn btn-outline-${ props.nightMode ? 'light' : 'dark' }`} {...lprops} />;
+};
 
 const LoadingSpinner = ShowIf('show', ({ show }) => (
     <div className="row justify-content-center">
