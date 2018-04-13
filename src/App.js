@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import $ from 'jquery';
+import { ToastContainer, toast, style } from 'react-toastify';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'material-design-icons/iconfont/material-icons.css';
 import './styles/App/App.css';
@@ -12,6 +13,13 @@ import { Lastfm, parseTitle } from './LastFM';
 
 const { GOOGLE_API_KEY } = keys;
 
+style({
+    TOP_RIGHT: {
+        top: '80px',
+        right: '1em'
+    }
+});
+
 class App extends Component {
     constructor (props) {
         super(props);
@@ -22,7 +30,6 @@ class App extends Component {
             youtubeAudioURL: "",
             youtubeVideoTitle: "",
             loading: false,
-            errorMessage: "",
             nightMode: true,
             currentFormat: "",
             youtubeVideoID: "",
@@ -49,11 +56,11 @@ class App extends Component {
     _testYoutubeVideoURL = "https://www.youtube.com/watch?v=bM7SZ5SBzyY";
 
     clear(){
-        this.setState({playQueue: this.state.playQueue.emptyQueue(), errorMessage: ""});
+        this.setState({playQueue: this.state.playQueue.emptyQueue()});
     }
 
     addToQueue(){
-        let newState = { errorMessage: "" };
+        let newState = {};
         if(this.state.youtubeVideoID) {
             newState.loading = true;
             $.ajax({
@@ -69,11 +76,20 @@ class App extends Component {
                         })
                     }, () => {
                         if (this.state.playQueue.values.length && !this.state.youtubeAudioURL){
-                            this.selectBestOption(this.state.youtubeVideoID);
+                            this.selectBestOption(this.state.playQueue.values[0].id);
+                        } else {
+                            toast.success(<NotifContent title='Enqueued'
+                                                        text={`"${response.title}" was added to the queue`} />,
+                                          { autoClose: 4000 });
                         }
                     });
                 },
-                error: () => this.setState({ loading: false, errorMessage: "Video not found..." })
+                error: () => {
+                    this.setState({ loading: false })
+                    toast.error(<NotifContent title='Video not found'
+                                              text='Check that the video URL exists or is complete' />
+                    );
+                }
             });
         } else if(this.state.youtubePlaylistID) {
             newState.loading = true;
@@ -84,7 +100,6 @@ class App extends Component {
 
     playSong(){
         this.setState({
-            errorMessage: "",
             playQueue: !this.state.youtubeVideoID ? this.state.playQueue : this.state.playQueue.addFirst({
                 id: this.state.youtubeVideoID,
                 title: null
@@ -122,7 +137,12 @@ class App extends Component {
                     this.addYoutubePlaylist(startPlaying, response.nextPageToken);
                 }
             },
-            error: () => this.setState({ loading: false, errorMessage: "Cannot load videos from playlist..." })
+            error: () => {
+                this.setState({ loading: false })
+                toast.error(<NotifContent title='Cannot load videos from playlist'
+                                          text='Something bad has happened while we were asking to YouTube for the videos in that playlist :(' />
+                );
+            }
         })
     }
 
@@ -160,7 +180,7 @@ class App extends Component {
     }
 
     selectBestOption(youtubeVideoID, autoplay = false) {
-        setTimeout(() => this.setState({ loading: true, errorMessage: "" }));
+        setTimeout(() => this.setState({ loading: true }));
         $.ajax({
             async: true,
             type: "GET",
@@ -171,7 +191,12 @@ class App extends Component {
                     .concat(response.filter(e => this.state.compatibility.vorbis && e.extra.startsWith('vorbis')))
                     .concat(response.filter(e => this.state.compatibility.opus && e.extra.startsWith('opus')));
                 if(response.length === 0){
-                    this.setState({ errorMessage: "Not compatible sources found for your browser", loading: false });
+                    this.setState({ loading: false });
+                    toast.error(<NotifContent title='No compatible sources for your browser'
+                                              text={'We could not find any compatible sources for your browser. It seems ' +
+                                                    'that your browser doesn\'t support neither Opus, Vorbis nor AAC.'} />,
+                                { autoClose: false }
+                    );
                     return;
                 }
                 response.forEach(e => {
@@ -187,7 +212,12 @@ class App extends Component {
                 });
                 this.loadAudioURL(youtubeVideoID, response[0].id, autoplay);
             },
-            error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "",  errorMessage: "Video not found..." })
+            error: () => {
+                this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "" })
+                toast.error(<NotifContent title='Video not found'
+                                          text='Check that the video URL exists or is complete.' />
+                );
+            }
         });
     }
 
@@ -216,14 +246,23 @@ class App extends Component {
                 }, () => {
                     if(autoplay) {
                         this.audioRef.current.oncanplay = e => {
-                            this.audioRef.current.play().catch(reason => console.error(reason));
+                            this.audioRef.current.play().catch(reason => toast.info(
+                                <NotifContent title='Press play manually'
+                                              text={'Due to your browser configuration, we cannot press play for you.' +
+                                                    ' You can change your autoplay options in the browser\'s configuration.'} />
+                            ));
                             this.audioRef.current.oncanplay = null;
                         };
                     }
                 });
                 $("title").text(this.state.youtubeVideoTitle + " - YouTube Audio");
             },
-            error: () => this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "", errorMessage: "Video not found..." })
+            error: () => {
+                this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "" });
+                toast.error(<NotifContent title='Video not found'
+                                          text='Check that the video URL exists or is complete.' />
+                );
+            }
         });
     }
 
@@ -311,7 +350,10 @@ class App extends Component {
         console.log(event.target.error.code);
         switch(event.target.error.code) {
         case event.target.error.MEDIA_ERR_NETWORK:
-            this.setState({ errorMessage: 'There was an network error' });
+            toast.error(<NotifContent title='There was a network error'
+                                      text='Could not load the song. Check your internet connection.' />,
+                        { autoClose: false }
+            );
             break;
 
         case event.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED: {
@@ -331,8 +373,17 @@ class App extends Component {
         this.setState({showingQueue: !this.state.showingQueue});
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        if(!prevState.loading && this.state.loading) {
+            this.loadingToast = toast(<LoadingSpinner />, { autoClose: false, closeOnClick: false });
+        } else if(prevState.loading && !this.state.loading) {
+            toast.dismiss(this.loadingToast);
+            this.loadingToast = undefined;
+        }
+    }
+
     render() {
-        const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, errorMessage, nightMode,
+        const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, nightMode,
             showingQueue, currentFormat, playQueue } = this.state;
         if(nightMode) $('body').addClass('AppDark').removeClass('AppLight');
         else $('body').removeClass('AppDark').addClass('AppLight');
@@ -340,6 +391,7 @@ class App extends Component {
             <div id="AppContainer">
                 <Header nightMode={ nightMode } nightModeListener={ this.nightModeListener } />
                 <div className="container-fluid">
+                    <ToastContainer pauseOnHover={ false } />
                     <p className="greyText" id="greyText">
                         Enjoy the audio from the youtube videos!
                     </p>
@@ -379,8 +431,6 @@ class App extends Component {
                                            disabled={loading || playQueue.values.length < 2}/>
                                 </div>
                             </div>
-                            <LoadingSpinner show={loading} />
-                            <ErrorMessage message={errorMessage} />
                             <NowPlayingText title={youtubeVideoTitle} currentFormat={currentFormat} />
                             { this.state.youtubeAudioURL ?
                                 <audio id="player" className="player" controls src={ youtubeAudioURL } onError={ this.onSongError }
@@ -419,20 +469,14 @@ const Button = props => {
     return <input type="button" className={`btn btn-outline-${ props.nightMode ? 'light' : 'dark' }`} {...lprops} />;
 };
 
-const LoadingSpinner = ShowIf('show', ({ show }) => (
+const LoadingSpinner = () => (
     <div className="row justify-content-center">
         <div className="title loading" id="stateText">
             Loading...
         </div>
         <div className="loader"/>
     </div>
-));
-
-const ErrorMessage = ShowIf('message', ({ message }) => (
-    <button className="title error" id="stateText">
-        { message }
-    </button>
-));
+);
 
 const NowPlayingText = ShowIf('title', ({ title, currentFormat }) => (
     <div className="title" id="stateText">
@@ -461,6 +505,13 @@ const Footer = () => (
             </a>
         </div>
     </footer>
+);
+
+const NotifContent = ({ title, text }) => (
+    <div>
+        <p className="lead">{ title }</p>
+        <p className="text-muted"><small>{ text }</small></p>
+    </div>
 );
 
 export default App;

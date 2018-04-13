@@ -30,7 +30,7 @@ export default class PlayQueue {
     }
 
     deleteFirst(){
-        return new PlayQueue(this.values.slice(1));
+        return this.values.length > 0 ? new PlayQueue(this.values.slice(1)) : this;
     }
 
     delete(element){

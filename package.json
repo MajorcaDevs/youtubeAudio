@@ -15,7 +15,8 @@
     "react": "^16.3.0",
     "react-ad-block-detect": "^1.0.1",
     "react-dom": "^16.3.0",
-    "react-scripts": "1.1.1"
+    "react-scripts": "1.1.1",
+    "react-toastify": "^3.4.3"
   },
   "scripts": {
     "start": "npm-run-all -p watch-css start-js",
