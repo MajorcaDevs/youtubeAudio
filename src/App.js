@@ -40,7 +40,7 @@ class App extends Component {
             scrobblingState: 'none', // 'none', 'nowPlaying', 'scrobbled'
         });
         this.audioRef = React.createRef();
-        this.lastfm = new Lastfm(); window.xd = () => this.lastfm.startAuthentication();
+        this.lastfm = new Lastfm(); window.xd = () => this.lastfm.startAuthentication(); window.xD = v => this.lastfm.disableScrobblings = !!v;
         this.listenerTestButton = this.listenerTestButton.bind(this);
         this.nightModeListener = this.nightModeListener.bind(this);
         this.titleProgress = this.titleProgress.bind(this);
@@ -109,6 +109,8 @@ class App extends Component {
             this.selectBestOption(this.state.youtubeVideoID, true);
         } else if(this.state.youtubePlaylistID) {
             this.addYoutubePlaylist(true);
+        } else if(this.state.playQueue.values.length > 0 && this.state.youtubeVideoURL) {
+            this.selectBestOption(this.state.playQueue.values[0].id);
         }
     }
 

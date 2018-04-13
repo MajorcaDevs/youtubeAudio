@@ -41,6 +41,7 @@ export class Lastfm {
     static baseUrl = 'http://ws.audioscrobbler.com/2.0/';
     _userToken = null;
     _userName = null;
+    _disableScrobblings = false;
 
     constructor() {
         let query = window.location.search.substr(1).split("&").map(e => e.split("=")).reduce((x, e) => {
@@ -48,9 +49,10 @@ export class Lastfm {
             return x;
         }, {});
         if(window.localStorage.getItem('lastfm')) {
-            const { userToken, userName } = JSON.parse(window.localStorage.getItem('lastfm'));
+            const { userToken, userName, disableScrobblings } = JSON.parse(window.localStorage.getItem('lastfm'));
             this._userToken = userToken;
             this._userName = userName;
+            this._disableScrobblings = disableScrobblings;
         } else if(query.token) {
             this._makeRequest('get', { method: 'auth.getSession', 'token': query.token })
                 .then(json => {
@@ -58,7 +60,8 @@ export class Lastfm {
                     this._userName = json.session.name;
                     window.localStorage.setItem('lastfm', JSON.stringify({
                         userToken: this._userToken,
-                        userName: this._userName
+                        userName: this._userName,
+                        disableScrobblings: this._disableScrobblings,
                     }));
                 });
         }
@@ -72,24 +75,38 @@ export class Lastfm {
         return this._userName;
     }
 
+    get disableScrobblings() {
+        return this._disableScrobblings;
+    }
+
+    set disableScrobblings(value) {
+        this._disableScrobblings = value;
+        window.localStorage.setItem('lastfm', JSON.stringify({
+            ...JSON.parse(window.localStorage.getItem('lastfm')),
+            disableScrobblings: this._disableScrobblings,
+        }));
+    }
+
     startAuthentication() {
         const currentUrl = window.location.toString();
         window.location.assign(`http://www.last.fm/api/auth/?api_key=${keys.LAST_FM_KEY}&cb=${encodeURIComponent(currentUrl)}`);
     }
 
     updateNowPlaying(metadata) {
-        if(metadata.title && metadata.artist) {
+        if(metadata.title && metadata.artist && !this._disableScrobblings) {
             return this._makeRequest('post', {
                 track: metadata.title,
                 artist: metadata.artist,
                 duration: Math.trunc(metadata.duration),
                 method: 'track.updateNowPlaying'
             });
+        } else {
+            return Promise.resolve({});
         }
     }
 
     scrobble(metadata) {
-        if(metadata.title && metadata.artist) {
+        if(metadata.title && metadata.artist && !this._disableScrobblings) {
             return this._makeRequest('post', {
                 track: metadata.title,
                 artist: metadata.artist,
@@ -97,6 +114,8 @@ export class Lastfm {
                 timestamp: Math.trunc((+metadata.timestamp) / 1000),
                 method: 'track.scrobble'
             });
+        } else {
+            return Promise.resolve({});
         }
     }
 

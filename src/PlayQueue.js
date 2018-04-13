@@ -7,7 +7,8 @@ export default class PlayQueue {
         } else {
             let playQueueJSONString = this._obtain();
             if (playQueueJSONString !== null){
-                this._array = playQueueJSONString;
+                this._array = playQueueJSONString.filter(entry => entry.title !== null);
+                this._store();
             } else {
                 this._array = [];
                 this._store();
