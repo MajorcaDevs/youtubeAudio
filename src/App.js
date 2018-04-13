@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import $ from 'jquery';
 import { ToastContainer, toast, style } from 'react-toastify';
+import { Spring } from 'react-spring';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'material-design-icons/iconfont/material-icons.css';
 import './styles/App/App.css';
@@ -392,6 +393,7 @@ class App extends Component {
 
     componentDidMount() {
         window.addEventListener('keydown', this.onWindowKeyDown);
+        window.addEventListener('resize', () => this.forceUpdate());
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -457,13 +459,20 @@ class App extends Component {
                                 <audio id="player" className="player" controls src={ youtubeAudioURL } onError={ this.onSongError }
                                        onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd } /> : null
                             }
-                            <PlayQueueList showing={ showingQueue } playQueue={ this.state.playQueue }/>
                         </div>
                     </div>
-                    <button id="playQueue" className={`btn ${showingQueue ? 'right' : 'left'} btn-outline-${ nightMode ? 'light' : 'dark' }`}
-                            onClick={ this.showQueue }>
-                        <div id="arrow" className={`${showingQueue ? 'right' : 'left'}`}/>
-                    </button>
+                    <PlayQueueList showing={ showingQueue } playQueue={ this.state.playQueue }/>
+                    <Spring from={{ right: 15 }}
+                            to={{ right: showingQueue ? Math.min(-PlayQueueList._right + 15, document.body.clientWidth - 45) : 15 }}>
+                        { styles =>
+                            <button id="playQueue"
+                                    style={ styles }
+                                    className={`btn ${showingQueue ? 'right' : 'left'} btn-outline-${ nightMode ? 'light' : 'dark' }`}
+                                    onClick={ this.showQueue }>
+                                <div id="arrow" className={`${showingQueue ? 'right' : 'left'}`}/>
+                            </button>
+                        }
+                    </Spring>
                 </div>
 
                 <Footer />

@@ -16,6 +16,7 @@
     "react-ad-block-detect": "^1.0.1",
     "react-dom": "^16.3.0",
     "react-scripts": "1.1.1",
+    "react-spring": "^4.1.2",
     "react-toastify": "^3.4.3"
   },
   "scripts": {

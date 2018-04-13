@@ -6,27 +6,23 @@
     top: 0;
     margin-top: 75px;
     margin-bottom: -150px;
+    z-index: 10;
     transition: background-color 1s, color 1s;
-    animation: PlayQueueAnimation1 .4s ease-in-out;
 
     @media (min-width: 576px) {
         width: 288px;
-        animation: PlayQueueAnimation2 .4s ease-in-out;
     }
 
     @media (min-width: 768px) {
         width: 384px;
-        animation: PlayQueueAnimation3 .4s ease-in-out;
     }
 
     @media (min-width: 992px) {
         width: 384px;
-        animation: PlayQueueAnimation3 .4s ease-in-out;
     }
 
     @media (min-width: 1200px) {
         width: 400px;
-        animation: PlayQueueAnimation4 .4s ease-in-out;
     }
 
     .AppLight & {
@@ -36,24 +32,4 @@
     .AppDark & {
         background-color: #181818;
     }
-}
-
-@keyframes PlayQueueAnimation1 {
-    from { right: -90% }
-    to { right: 0 }
-}
-
-@keyframes PlayQueueAnimation2 {
-    from { right: -288px }
-    to { right: 0 }
-}
-
-@keyframes PlayQueueAnimation3 {
-    from { right: -384px }
-    to { right: 0 }
-}
-
-@keyframes PlayQueueAnimation4 {
-    from { right: -400px }
-    to { right: 0 }
 }

@@ -124,9 +124,8 @@ body {
     position: absolute;
     bottom: 90px;
     right: 15px;
+    z-index: 11;
     transition: border 0.15s,
-        left .4s ease-in-out,
-        right .4s ease-in-out,
         border-color 1s;
 
     & > #arrow {
@@ -146,11 +145,6 @@ body {
         & > #arrow {
             transform: rotate(-45deg);
         }
-
-        @media (max-width: 575px) { right: initial; left: 15px }
-        @media (min-width: 576px) { right: 303px }
-        @media (min-width: 992px) { right: 399px }
-        @media (min-width: 1200px) { right: 415px }
     }
 
     @media (max-width: 575px) { bottom: 15px }
@@ -163,6 +157,7 @@ body {
 
         &:hover > #arrow {
             border-color: white;
+            @media (max-width: 575px) { border-color: #111; }
         }
     }
 
@@ -174,6 +169,7 @@ body {
 
         &:hover > #arrow {
             border-color: #111;
+            @media (max-width: 575px) { border-color: white; }
         }
     }
 }

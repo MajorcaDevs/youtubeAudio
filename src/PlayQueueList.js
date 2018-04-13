@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Transition, animated } from 'react-spring';
 import './styles/PlayQueueList/PlayQueueList.css';
 
 
@@ -12,20 +13,17 @@ export default class PlayQueueList extends Component{
 
     constructor(props){
         super(props);
-        this.state = ({
-            isClosing: false
-        });
     }
 
     render () {
         const { showing, playQueue } = this.props;
-        const { isClosing } = this.state;
-        if ( showing || isClosing ) {
-            if ( playQueue.values.length <= 1 ) {
-                return ( <div id="playQueueList"> Play Queue is Empty </div>) ;
+        let element = [];
+        if (showing) {
+            if (playQueue.values.length <= 1) {
+                element.push(styles => <div id="playQueueList" style={styles}> Play Queue is Empty </div>);
             } else {
-                return (
-                    <div id="playQueueList" style={{overflowY: 'scroll'}}>
+                element.push(styles => (
+                    <div id="playQueueList" style={{overflowY: 'scroll', ...styles}}>
                         <div>Play Queue</div>
                         <div style={{marginBottom: '100px'}}>
                             {[...this.props.playQueue.values].splice(1).map((songInQueue, i) => {
@@ -39,11 +37,31 @@ export default class PlayQueueList extends Component{
                             <div>End list</div>
                         </div>
                     </div>
-
-                );
+                ));
             }
+        }
+
+        return (
+            <Transition
+                keys={element.map(() => 'queue')}
+                from={{ right: PlayQueueList._right }}
+                enter={{ right: 0 }}
+                leave={{ right: PlayQueueList._right }}>
+                    { element }
+            </Transition>
+        );
+    }
+
+    static get _right() {
+        const windowWidth = window.document.body.clientWidth;
+        if(windowWidth < 576) {
+            return -windowWidth * 0.90;
+        } else if(windowWidth < 768) {
+            return -288;
+        } else if(windowWidth < 1200) {
+            return -384;
         } else {
-            return null;
+            return -400;
         }
     }
 }
