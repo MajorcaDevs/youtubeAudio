@@ -43,6 +43,7 @@ class App extends Component {
         this.lastfm = new Lastfm(); window.xd = () => this.lastfm.startAuthentication(); window.xD = v => this.lastfm.disableScrobblings = !!v;
         this.listenerTestButton = this.listenerTestButton.bind(this);
         this.nightModeListener = this.nightModeListener.bind(this);
+        this.onWindowKeyDown = this.onWindowKeyDown.bind(this);
         this.titleProgress = this.titleProgress.bind(this);
         this.listenerForm = this.listenerForm.bind(this);
         this.onSongError = this.onSongError.bind(this);
@@ -373,6 +374,24 @@ class App extends Component {
     showQueue(event) {
         event.preventDefault();
         this.setState({showingQueue: !this.state.showingQueue});
+    }
+
+    onWindowKeyDown(event) {
+        if(event.code === 'Space' && event.target.getAttribute('id') !== "videoURL") {
+            if(this.audioRef.current) {
+                event.preventDefault();
+                event.stopPropagation();
+                if(this.audioRef.current.paused) {
+                    this.audioRef.current.play().catch();
+                } else {
+                    this.audioRef.current.pause();
+                }
+            }
+        }
+    }
+
+    componentDidMount() {
+        window.addEventListener('keydown', this.onWindowKeyDown);
     }
 
     componentDidUpdate(prevProps, prevState) {
