@@ -38,7 +38,7 @@ if(process.env.NODE_ENV !== 'production') {
 }
 
 export class Lastfm {
-    static baseUrl = 'http://ws.audioscrobbler.com/2.0/';
+    static baseUrl = 'https://ws.audioscrobbler.com/2.0/';
     _userToken = null;
     _userName = null;
     _disableScrobblings = false;
