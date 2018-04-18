@@ -29,6 +29,13 @@ export const parseTitle = (text) => {
             artist: parts[1].trim()
         };
     } else {
+        const parts = /([a-záéíóúàèìòùäëïöüâêîôûç_0-9&./',\- ]+) (?:'|‘)([a-záéíóúàèìòùäëïöüâêîôûç_0-9&./',\- ()]+)(?:'|’)/i.exec(text);
+        if(parts !== null) {
+            return {
+                title: parts[2].trim(),
+                artist: parts[1].trim()
+            };
+        }
         return null;
     }
 };

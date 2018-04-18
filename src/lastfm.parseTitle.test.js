@@ -31,6 +31,9 @@ const testValues = [
     'Intr0beatz - Trees Breez',
     'Afro Medusa - Pasilda - Knee Deep Remix',
     'Noisia Radio S04E01',
+    "Qubiko & K-909 'These Days'",
+    'Dario D\'Attis & Definition featuring Jinadu ‘Dreamcatcher’',
+    "Dario D'Attis & Sven Tasnadi 'I Need'",
 ];
 
 const testExpectedValues = [
@@ -64,6 +67,9 @@ const testExpectedValues = [
     { artist: 'Intr0beatz', title: 'Trees Breez' },
     { artist: 'Afro Medusa', title: 'Pasilda - Knee Deep Remix' },
     null,
+    { artist: 'Qubiko & K-909', title: 'These Days' },
+    { artist: 'Dario D\'Attis & Definition featuring Jinadu', title: 'Dreamcatcher' },
+    { artist: 'Dario D\'Attis & Sven Tasnadi', title: 'I Need' },
 ];
 
 export const doTest = () => {

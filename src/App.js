@@ -80,9 +80,9 @@ class App extends Component {
                         if (this.state.playQueue.values.length && !this.state.youtubeAudioURL){
                             this.selectBestOption(this.state.playQueue.values[0].id);
                         } else {
-                            toast.success(<NotifContent title='Enqueued'
-                                                        text={`"${response.title}" was added to the queue`} />,
-                                          { autoClose: 4000 });
+                            toast(<NotifContent title='Enqueued'
+                                                text={`"${response.title}" was added to the queue`} />,
+                                  { autoClose: 4000 });
                         }
                     });
                 },
@@ -139,6 +139,10 @@ class App extends Component {
                 });
                 if(response.nextPageToken) {
                     this.addYoutubePlaylist(startPlaying, response.nextPageToken);
+                } else {
+                    toast(<NotifContent title='Enqueued'
+                                        text={`The playlist was fully enqueued`} />,
+                          { autoClose: 4000 });
                 }
             },
             error: () => {
@@ -320,7 +324,7 @@ class App extends Component {
                 } else {
                     this.setState({ scrobblingState: 'nowPlaying' });
                 }
-            } else if(this.state.scrobblingState === 'nowPlaying' && currentTime >= Math.min(duration, 240)) {
+            } else if(this.state.scrobblingState === 'nowPlaying' && currentTime >= Math.min(duration / 2, 240)) {
                 const parsed = parseTitle(this.state.youtubeVideoTitle);
                 if(parsed) {
                     this.setState({ scrobblingState: null });
