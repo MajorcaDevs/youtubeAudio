@@ -80,17 +80,22 @@ class App extends Component {
                         if (this.state.playQueue.values.length && !this.state.youtubeAudioURL){
                             this.selectBestOption(this.state.playQueue.values[0].id);
                         } else {
-                            toast(<NotifContent title='Enqueued'
-                                                text={`"${response.title}" was added to the queue`} />,
-                                  { autoClose: 4000 });
+                            toast.update(this.loadingToast, {
+                                type: toast.TYPE.DEFAULT,
+                                render: <NotifContent title='Enqueued' light={false}
+                                                      text={`"${response.title}" was added to the queue`} />,
+                                autoClose: 4000
+                            });
                         }
                     });
                 },
                 error: () => {
                     this.setState({ loading: false })
-                    toast.error(<NotifContent title='Video not found'
-                                              text='Check that the video URL exists or is complete' />
-                    );
+                    toast.update(this.loadingToast, {
+                        render: <NotifContent title='Video not found' light={true}
+                                              text='Check that the video URL exists or is complete' />,
+                        type: toast.TYPE.ERROR
+                    });
                 }
             });
         } else if(this.state.youtubePlaylistID) {
@@ -140,16 +145,21 @@ class App extends Component {
                 if(response.nextPageToken) {
                     this.addYoutubePlaylist(startPlaying, response.nextPageToken);
                 } else {
-                    toast(<NotifContent title='Enqueued'
+                    toast.update(this.loadingToast,{
+                        render: <NotifContent title='Enqueued'  light={false}
                                         text={`The playlist was fully enqueued`} />,
-                          { autoClose: 4000 });
+                        type: toast.TYPE.DEFAULT,
+                        autoClose: 4000
+                    });
                 }
             },
             error: () => {
                 this.setState({ loading: false })
-                toast.error(<NotifContent title='Cannot load videos from playlist'
-                                          text='Something bad has happened while we were asking to YouTube for the videos in that playlist :(' />
-                );
+                toast.update(this.loadingToast, {
+                    render: <NotifContent title='Cannot load videos from playlist'  light={true}
+                                          text='Something bad has happened while we were asking to YouTube for the videos in that playlist :(' />,
+                    type: toast.TYPE.ERROR
+                });
             }
         })
     }
@@ -200,7 +210,7 @@ class App extends Component {
                     .concat(response.filter(e => this.state.compatibility.opus && e.extra.startsWith('opus')));
                 if(response.length === 0){
                     this.setState({ loading: false });
-                    toast.error(<NotifContent title='No compatible sources for your browser'
+                    toast.error(<NotifContent title='No compatible sources for your browser' light={true}
                                               text={'We could not find any compatible sources for your browser. It seems ' +
                                                     'that your browser doesn\'t support neither Opus, Vorbis nor AAC.'} />,
                                 { autoClose: false }
@@ -222,9 +232,11 @@ class App extends Component {
             },
             error: () => {
                 this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "" })
-                toast.error(<NotifContent title='Video not found'
-                                          text='Check that the video URL exists or is complete.' />
-                );
+                toast.update(this.loadingToast, {
+                    render: <NotifContent title='Video not found' light={true}
+                                          text='Check that the video URL exists or is complete.' />,
+                    type: toast.TYPE.ERROR
+                });
             }
         });
     }
@@ -254,22 +266,27 @@ class App extends Component {
                 }, () => {
                     if(autoplay) {
                         this.audioRef.current.oncanplay = e => {
-                            this.audioRef.current.play().catch(reason => toast.info(
-                                <NotifContent title='Press play manually'
+                            this.audioRef.current.play().catch(reason => toast.update(this.loadingToast, {
+                                type: toast.TYPE.INFO,
+                                render: <NotifContent title='Press play manually' light={false}
                                               text={'Due to your browser configuration, we cannot press play for you.' +
                                                     ' You can change your autoplay options in the browser\'s configuration.'} />
-                            ));
+                            }));
                             this.audioRef.current.oncanplay = null;
                         };
+                    } else {
+                        toast.dismiss(this.loadingToast);
                     }
                 });
                 $("title").text(this.state.youtubeVideoTitle + " - YouTube Audio");
             },
             error: () => {
                 this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "" });
-                toast.error(<NotifContent title='Video not found'
-                                          text='Check that the video URL exists or is complete.' />
-                );
+                toast.update(this.loadingToast, {
+                    render: <NotifContent title='Video not found' light={true}
+                                          text='Check that the video URL exists or is complete.' />,
+                    type: toast.TYPE.ERROR
+                });
             }
         });
     }
@@ -355,7 +372,6 @@ class App extends Component {
     }
 
     onSongError(event) {
-        console.log(event.target.error.code);
         switch(event.target.error.code) {
         case event.target.error.MEDIA_ERR_NETWORK:
             toast.error(<NotifContent title='There was a network error'
@@ -403,9 +419,6 @@ class App extends Component {
     componentDidUpdate(prevProps, prevState) {
         if(!prevState.loading && this.state.loading) {
             this.loadingToast = toast(<LoadingSpinner />, { autoClose: false, closeOnClick: false });
-        } else if(prevState.loading && !this.state.loading) {
-            toast.dismiss(this.loadingToast);
-            this.loadingToast = undefined;
         }
     }
 
@@ -541,10 +554,10 @@ const Footer = () => (
     </footer>
 );
 
-const NotifContent = ({ title, text }) => (
+const NotifContent = ({ title, text, light }) => (
     <div>
         <p className="lead">{ title }</p>
-        <p className="text-muted"><small>{ text }</small></p>
+        <p className={light ? "text-light" : "text-muted"}><small>{ text }</small></p>
     </div>
 );
 
