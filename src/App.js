@@ -38,6 +38,7 @@ class App extends Component {
             youtubePlaylistID: "",
             compatibility: this.checkFormats(),
             playQueue: new PlayQueue(),
+            isPlaying: false,
             scrobblingState: 'none', // 'none', 'nowPlaying', 'scrobbled'
         });
         this.audioRef = React.createRef();
@@ -49,9 +50,12 @@ class App extends Component {
         this.listenerForm = this.listenerForm.bind(this);
         this.onSongError = this.onSongError.bind(this);
         this.addToQueue = this.addToQueue.bind(this);
+        this.formatTime = this.formatTime.bind(this);
         this.showQueue = this.showQueue.bind(this);
         this.onSongEnd = this.onSongEnd.bind(this);
         this.playSong = this.playSong.bind(this);
+        this.onPause = this.onPause.bind(this);
+        this.onPlay = this.onPlay.bind(this);
         this.clear = this.clear.bind(this);
     }
 
@@ -215,6 +219,7 @@ class App extends Component {
                                                     'that your browser doesn\'t support neither Opus, Vorbis nor AAC.'} />,
                                 { autoClose: false }
                     );
+                    toast.dismiss(this.loadingToast);
                     return;
                 }
                 response.forEach(e => {
@@ -315,13 +320,17 @@ class App extends Component {
         this.setState({ nightMode: !this.state.nightMode });
     }
 
-    titleProgress(event){
-        const currentTime = event.target.currentTime;
-        let duration = event.target.duration;
+    formatTime(currentTime){
         let time = Math.round(currentTime);
         let seconds = time - (Math.floor(time/60)*60);
-        time = Math.floor(time/60) + ":" + (seconds < 10 ? "0"+seconds : seconds);
-        $("title").text(time + " - " + this.state.youtubeVideoTitle + " - YouTube Audio");
+        return Math.floor(time/60) + ":" + (seconds < 10 ? "0"+seconds : seconds);
+    }
+
+    titleProgress(event){
+        const currentTime = this.audioRef.current.currentTime;
+        let duration = this.audioRef.current.duration;
+        let time = this.formatTime(currentTime);
+        $("title").text(`${this.state.isPlaying ? "▶" : "▮▮"} ${time} - ${this.state.youtubeVideoTitle} - YouTube Audio`);
 
         if(navigator.userAgent.indexOf('Safari/') !== -1) {
             //Workaround for Safari m4a playing bug
@@ -358,10 +367,13 @@ class App extends Component {
 
         if(currentTime > duration && currentTime - duration > 1) {
             //Workaround for Safari m4a playing bug
-            console.log("FORCE NEXT");
             this.onSongEnd(null);
         }
     }
+
+    onPlay(){ this.setState({isPlaying: true}); }
+
+    onPause(){ this.setState({isPlaying: false}); }
 
     onSongEnd(event) {
         this.setState({ playQueue: this.state.playQueue.deleteFirst(), scrobblingState: 'none' }, () => {
@@ -420,6 +432,18 @@ class App extends Component {
         if(!prevState.loading && this.state.loading) {
             this.loadingToast = toast(<LoadingSpinner />, { autoClose: false, closeOnClick: false });
         }
+
+        if(prevState.loading && !this.state.loading) {
+            toast.dismiss(this.loadingToast);
+        }
+
+        if(prevState.isPlaying !== this.state.isPlaying){
+            console.log("playapuse");
+            $("title").text(
+                `${this.state.isPlaying ? "▶" : "▮▮"}
+                ${this.formatTime(this.audioRef.current.currentTime)} - ${this.state.youtubeVideoTitle} - YouTube Audio`
+            );
+        }
     }
 
     render() {
@@ -474,7 +498,8 @@ class App extends Component {
                             <NowPlayingText title={youtubeVideoTitle} currentFormat={currentFormat} />
                             { this.state.youtubeAudioURL ?
                                 <audio id="player" className="player" controls src={ youtubeAudioURL } onError={ this.onSongError }
-                                       onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd } /> : null
+                                       onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd }
+                                       onPlay={this.onPlay} onPause={this.onPause} /> : null
                             }
                         </div>
                     </div>
