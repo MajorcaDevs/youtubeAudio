@@ -223,11 +223,13 @@ body {
     .btn {
         .AppLight & {
             background-color: #FFF;
+            img { filter: invert(1) }
             &:hover, &:focus { color: #222; img { filter: invert(1) } }
         }
 
         .AppDark & {
             background-color: #222;
+            img { filter: invert(0) }
             &:hover, &:focus { color: #fff; img { filter: invert(0) } }
         }
     }
