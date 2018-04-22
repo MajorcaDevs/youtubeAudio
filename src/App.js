@@ -83,23 +83,15 @@ class App extends Component {
                     }, () => {
                         if (this.state.playQueue.values.length && !this.state.youtubeAudioURL){
                             this.selectBestOption(this.state.playQueue.values[0].id);
+                            this.loadingToast.dismiss();
                         } else {
-                            toast.update(this.loadingToast, {
-                                type: toast.TYPE.DEFAULT,
-                                render: <NotifContent title='Enqueued' light={false}
-                                                      text={`"${response.title}" was added to the queue`} />,
-                                autoClose: 4000
-                            });
+                            this.loadingToast.success('Enqueued', `"${response.title}" was added to the queue`)
                         }
                     });
                 },
                 error: () => {
-                    this.setState({ loading: false })
-                    toast.update(this.loadingToast, {
-                        render: <NotifContent title='Video not found' light={true}
-                                              text='Check that the video URL exists or is complete' />,
-                        type: toast.TYPE.ERROR
-                    });
+                    this.setState({ loading: false });
+                    this.loadingToast.error('Video not found', 'Check that the video URL exists or is complete');
                 }
             });
         } else if(this.state.youtubePlaylistID) {
@@ -149,21 +141,13 @@ class App extends Component {
                 if(response.nextPageToken) {
                     this.addYoutubePlaylist(startPlaying, response.nextPageToken);
                 } else {
-                    toast.update(this.loadingToast,{
-                        render: <NotifContent title='Enqueued'  light={false}
-                                        text={`The playlist was fully enqueued`} />,
-                        type: toast.TYPE.DEFAULT,
-                        autoClose: 4000
-                    });
+                    this.loadingToast.success('Enqueued', 'The playlist was fully enqueued');
                 }
             },
             error: () => {
-                this.setState({ loading: false })
-                toast.update(this.loadingToast, {
-                    render: <NotifContent title='Cannot load videos from playlist'  light={true}
-                                          text='Something bad has happened while we were asking to YouTube for the videos in that playlist :(' />,
-                    type: toast.TYPE.ERROR
-                });
+                this.setState({ loading: false });
+                this.loadingToast.error('Cannot load videos from playlist',
+                                        'Something bad has happened while we were asking to YouTube for the videos in that playlist :(');
             }
         })
     }
@@ -214,12 +198,9 @@ class App extends Component {
                     .concat(response.filter(e => this.state.compatibility.opus && e.extra.startsWith('opus')));
                 if(response.length === 0){
                     this.setState({ loading: false });
-                    toast.error(<NotifContent title='No compatible sources for your browser' light={true}
-                                              text={'We could not find any compatible sources for your browser. It seems ' +
-                                                    'that your browser doesn\'t support neither Opus, Vorbis nor AAC.'} />,
-                                { autoClose: false }
-                    );
-                    toast.dismiss(this.loadingToast);
+                    this.loadingToast.error('No compatible sources for your browser',
+                                            'We could not find any compatible sources for your browser. It seems ' +
+                                            'that your browser doesn\'t support neither Opus, Vorbis nor AAC.');
                     return;
                 }
                 response.forEach(e => {
@@ -237,11 +218,7 @@ class App extends Component {
             },
             error: () => {
                 this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "" })
-                toast.update(this.loadingToast, {
-                    render: <NotifContent title='Video not found' light={true}
-                                          text='Check that the video URL exists or is complete.' />,
-                    type: toast.TYPE.ERROR
-                });
+                this.loadingToast.error('Video not found', 'Check that the video URL exists or is complete.');
             }
         });
     }
@@ -271,27 +248,23 @@ class App extends Component {
                 }, () => {
                     if(autoplay) {
                         this.audioRef.current.oncanplay = e => {
-                            this.audioRef.current.play().catch(reason => toast.update(this.loadingToast, {
+                            this.audioRef.current.play().catch(reason => toast.update(this.loadingToast._toast, {
                                 type: toast.TYPE.INFO,
                                 render: <NotifContent title='Press play manually' light={false}
                                               text={'Due to your browser configuration, we cannot press play for you.' +
                                                     ' You can change your autoplay options in the browser\'s configuration.'} />
-                            }));
+                            })).then(() => this.loadingToast.dismiss());
                             this.audioRef.current.oncanplay = null;
                         };
                     } else {
-                        toast.dismiss(this.loadingToast);
+                        this.loadingToast.dismiss();
                     }
                 });
                 $("title").text(this.state.youtubeVideoTitle + " - YouTube Audio");
             },
             error: () => {
                 this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "" });
-                toast.update(this.loadingToast, {
-                    render: <NotifContent title='Video not found' light={true}
-                                          text='Check that the video URL exists or is complete.' />,
-                    type: toast.TYPE.ERROR
-                });
+                this.loadingToast.error('Video not found', 'Check that the video URL exists or is complete.');
             }
         });
     }
@@ -430,15 +403,10 @@ class App extends Component {
 
     componentDidUpdate(prevProps, prevState) {
         if(!prevState.loading && this.state.loading) {
-            this.loadingToast = toast(<LoadingSpinner />, { autoClose: false, closeOnClick: false });
-        }
-
-        if(prevState.loading && !this.state.loading) {
-            toast.dismiss(this.loadingToast);
+            this.loadingToast = new LoadingToastController();
         }
 
         if(prevState.isPlaying !== this.state.isPlaying){
-            console.log("playapuse");
             $("title").text(
                 `${this.state.isPlaying ? "▶" : "▮▮"}
                 ${this.formatTime(this.audioRef.current.currentTime)} - ${this.state.youtubeVideoTitle} - YouTube Audio`
@@ -504,17 +472,7 @@ class App extends Component {
                         </div>
                     </div>
                     <PlayQueueList showing={ showingQueue } playQueue={ this.state.playQueue }/>
-                    <Spring from={{ right: 15 }}
-                            to={{ right: showingQueue ? Math.min(-PlayQueueList._right + 15, document.body.clientWidth - 45) : 15 }}>
-                        { styles =>
-                            <button id="playQueue"
-                                    style={ styles }
-                                    className={`btn ${showingQueue ? 'right' : 'left'} btn-outline-${ nightMode ? 'light' : 'dark' }`}
-                                    onClick={ this.showQueue }>
-                                <div id="arrow" className={`${showingQueue ? 'right' : 'left'}`}/>
-                            </button>
-                        }
-                    </Spring>
+                    <PlayQueueListButton onClick={ this.showQueue } showingQueue={ showingQueue } nightMode={ nightMode } />
                 </div>
 
                 <Footer />
@@ -585,5 +543,49 @@ const NotifContent = ({ title, text, light }) => (
         <p className={light ? "text-light" : "text-muted"}><small>{ text }</small></p>
     </div>
 );
+
+const PlayQueueListButton = ({ showingQueue, nightMode, onClick }) => (
+    <Spring from={{ right: 15 }}
+            to={{ right: showingQueue ? Math.min(-PlayQueueList._right + 15, document.body.clientWidth - 45) : 15 }}>
+        { styles =>
+            <button id="playQueue"
+                    style={ styles }
+                    className={`btn ${showingQueue ? 'right' : 'left'} btn-outline-${ nightMode ? 'light' : 'dark' }`}
+                    onClick={ onClick }>
+                <div id="arrow" className={`${showingQueue ? 'right' : 'left'}`}/>
+            </button>
+        }
+    </Spring>
+);
+
+class LoadingToastController {
+    constructor() {
+        this._toast = toast(<LoadingSpinner />, { autoClose: false, closeOnClick: false, closeButton: false });
+    }
+
+    success(title, content) {
+        toast.update(this._toast, {
+            type: toast.TYPE.DEFAULT,
+            render: <NotifContent title={ title } light={false} text={ content } />,
+            autoClose: 4000,
+            closeButton: null,
+            closeOnClick: true,
+        });
+    }
+
+    error(title, content) {
+        toast.update(this._toast, {
+            render: <NotifContent title='Video not found' light={true}
+                                  text='Check that the video URL exists or is complete.' />,
+            type: toast.TYPE.ERROR,
+            closeButton: null,
+            closeOnClick: true,
+        });
+    }
+
+    dismiss() {
+        toast.dismiss(this._toast);
+    }
+}
 
 export default App;
