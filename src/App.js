@@ -7,12 +7,10 @@ import 'material-design-icons/iconfont/material-icons.css';
 import './styles/App/App.css';
 import github from './github.svg';
 import PlayQueue from './PlayQueue';
-import keys from './keys.json';
 import PlayQueueList from './PlayQueueList';
 import { Lastfm, parseTitle } from './LastFM';
+import { selectBestOption, loadAudioURL, addYoutubePlaylist } from './api';
 // import AdBlockDetect from 'react-ad-block-detect';
-
-const { GOOGLE_API_KEY } = keys;
 
 style({
     TOP_RIGHT: {
@@ -36,7 +34,6 @@ class App extends Component {
             youtubeVideoID: "",
             showingQueue: false,
             youtubePlaylistID: "",
-            compatibility: this.checkFormats(),
             playQueue: new PlayQueue(),
             isPlaying: false,
             scrobblingState: 'none', // 'none', 'nowPlaying', 'scrobbled'
@@ -65,40 +62,32 @@ class App extends Component {
         this.setState({playQueue: this.state.playQueue.emptyQueue()});
     }
 
-    addToQueue(){
-        let newState = {};
+    async addToQueue() {
         if(this.state.youtubeVideoID) {
-            newState.loading = true;
-            $.ajax({
-                async: true,
-                type: "GET",
-                url: "https://yt-audio-api.herokuapp.com/api/" + this.state.youtubeVideoID,
-                success: (response) => {
-                    this.setState({
-                        loading: false,
-                        playQueue: this.state.playQueue.add({
-                            id: this.state.youtubeVideoID,
-                            title: response.title
-                        })
-                    }, () => {
-                        if (this.state.playQueue.values.length && !this.state.youtubeAudioURL){
-                            this.selectBestOption(this.state.playQueue.values[0].id);
-                            this.loadingToast.dismiss();
-                        } else {
-                            this.loadingToast.success('Enqueued', `"${response.title}" was added to the queue`)
-                        }
-                    });
-                },
-                error: () => {
-                    this.setState({ loading: false });
-                    this.loadingToast.error('Video not found', 'Check that the video URL exists or is complete');
-                }
-            });
+            this.setState({ loading: true });
+            try {
+                const { title } = await loadAudioURL(this.state.youtubeVideoID);
+                this.setState({
+                    loading: false,
+                    playQueue: this.state.playQueue.add({
+                        id: this.state.youtubeVideoID,
+                        title: title
+                    })
+                }, () => {
+                    if (this.state.playQueue.values.length && !this.state.youtubeAudioURL){
+                        this.loadSong(this.state.playQueue.values[0].id);
+                        this.loadingToast.dismiss();
+                    } else {
+                        this.loadingToast.success('Enqueued', `"${title}" was added to the queue`)
+                    }
+                });
+            } catch(e) {
+                this.setState({ loading: false });
+                this.loadingToast.error(e.message, e.descriptiveMessage);
+            }
         } else if(this.state.youtubePlaylistID) {
-            newState.loading = true;
-            this.addYoutubePlaylist();
+            this.loadPlaylist();
         }
-        this.setState(newState);
     }
 
     playSong(){
@@ -109,62 +98,99 @@ class App extends Component {
             })
         });
         if (this.state.youtubeVideoID) {
-            this.selectBestOption(this.state.youtubeVideoID, true);
+            this.loadSong(this.state.youtubeVideoID, true);
         } else if(this.state.youtubePlaylistID) {
-            this.addYoutubePlaylist(true);
+            this.loadPlaylist(true);
         } else if(this.state.playQueue.values.length > 0 && this.state.youtubeVideoURL) {
-            this.selectBestOption(this.state.playQueue.values[0].id);
+            this.loadSong(this.state.playQueue.values[0].id);
         }
     }
 
-    addYoutubePlaylist(startPlaying = false, nextId = null) {
+    /**
+     * Loads the video and prepares the audio player. Modifies this state: loading, currentFormat, qualityFromAudio,
+     * youtubeAudioURL, youtubeVideoTitle, scrobblingState. Shows a loading spinner and updates the notification
+     * with the good result or the error.
+     * @param {string} youtubeVideoID Given a Youtube Video URL, loads the best quality for the current browser and
+     * prepares the player
+     * @param {boolean} autoplay When the player is ready, if it is true, then will start playing automatically
+     */
+    async loadSong(youtubeVideoID, autoplay) {
         this.setState({ loading: true });
-        let url = `https://www.googleapis.com/youtube/v3/playlistItems?part=id,snippet&maxResults=50&playlistId=${this.state.youtubePlaylistID}&key=${GOOGLE_API_KEY}`;
-        if(nextId) url += `&pageToken=${nextId}`;
-        $.ajax({
-            url,
-            async: true,
-            type: 'GET',
-            success: response => {
-                this.setState({
-                    loading: !!response.nextToken,
-                    playQueue: this.state.playQueue.add(...response.items.map(item => ({ id: item.snippet.resourceId.videoId, title: item.snippet.title })))
-                }, () => {
-                    if(this.state.playQueue.values.length > 0) {
-                        this.setState({
-                            youtubeVideoID: this.state.playQueue.values[0].id,
-                            youtubeVideoTitle: this.state.playQueue.values[0].title
-                        });
-                        this.selectBestOption(this.state.playQueue.values[0].id, startPlaying);
-                    }
-                });
-                if(response.nextPageToken) {
-                    this.addYoutubePlaylist(startPlaying, response.nextPageToken);
+        try {
+            const { codec, bitrate, bps, id } = await selectBestOption(youtubeVideoID);
+            this.setState({
+                currentFormat: `${codec}@~${bitrate ? bitrate : bps}kbps`,
+                qualityFromAudio: id
+            });
+
+            const { url, title } = await loadAudioURL(youtubeVideoID, id);
+            this.setState({
+                youtubeAudioURL: url,
+                youtubeVideoTitle: title,
+                loading: false,
+                scrobblingState: 'none'
+            }, () => {
+                $("title").text(`${this.state.youtubeVideoTitle} - YouTube Audio`);
+                if(autoplay) {
+                    this.audioRef.current.oncanplay = async (e) => {
+                        try {
+                            await this.audioRef.current.play();
+                            this.loadingToast.dismiss();
+                        } catch(e) {
+                            toast.update(this.loadingToast._toast, {
+                                type: toast.TYPE.INFO,
+                                render: <NotifContent title='Press play manually' light={false}
+                                              text={'Due to your browser configuration, we cannot press play for you.' +
+                                                    ' You can change your autoplay options in the browser\'s configuration.'} />,
+                                closeButton: null,
+                                closeOnClick: true,
+                            });
+                        }
+                        this.audioRef.current.oncanplay = null;
+                        this.loadingToast = null;
+                    };
                 } else {
-                    this.loadingToast.success('Enqueued', 'The playlist was fully enqueued');
+                    this.loadingToast.dismiss();
+                    this.loadingToast = null;
                 }
-            },
-            error: () => {
-                this.setState({ loading: false });
-                this.loadingToast.error('Cannot load videos from playlist',
-                                        'Something bad has happened while we were asking to YouTube for the videos in that playlist :(');
+            });
+        } catch(e) {
+            this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "" });
+            this.loadingToast.error(e.message, e.descriptiveMessage);
+            this.loadingToast = null;
+        }
+    }
+
+    /**
+     * Loads the playlist stored in `this.state.youtubePlaylistID` into the queue, showing a loading spinner,
+     * and, if there's nothing playing, it will start playing the first song of the play queue.
+     * @param {boolean} startPlaying When the playlist is loaded, should the player start playing?
+     */
+    async loadPlaylist(startPlaying) {
+        this.setState({ loading: true });
+        try {
+            const items = await addYoutubePlaylist(this.state.youtubePlaylistID, true);
+            let newState = {
+                loading: false,
+                playQueue: this.state.playQueue.add(...items),
+            };
+            if(!this.state.youtubeAudioURL && newState.playQueue.values.length > 0) {
+                newState.youtubeVideoID = newState.playQueue.values[0].id;
+                newState.youtubeVideoTitle = newState.playQueue.values[0].title;
+                this.loadSong(newState.playQueue.values[0].id, startPlaying);
             }
-        })
+            this.setState(newState);
+        } catch(e) {
+            this.setState({ loading: false });
+            this.loadingToast.error(e.message, e.descriptiveMessage);
+            this.loadingToast = null;
+        }
     }
 
-    checkFormats(){
-        let a = document.createElement("audio");
-        return ({
-            opus: ((a.canPlayType("audio/webm; codecs=opus")) !== ""),
-            vorbis: ((a.canPlayType("audio/webm; codecs=vorbis")) !== ""),
-            m4a: ((a.canPlayType("audio/x-m4a; codecs=mp4a.40.2")) !== "")
-        });
-    }
-
-    listenerTestButton(event){
+    listenerTestButton(event) {
         event.preventDefault();
-        this.setState({youtubeVideoURL: this._testYoutubeVideoURL});
-        this.selectBestOption(this.getYoutubeVideoID(this._testYoutubeVideoURL));
+        this.setState({ youtubeVideoURL: this._testYoutubeVideoURL });
+        this.loadSong(this.getYoutubeVideoID(this._testYoutubeVideoURL), true);
     }
 
     listenerForm(event) {
@@ -182,93 +208,17 @@ class App extends Component {
             newState.invalidURL = url.length !== 0;
         }
         this.setState(newState);
-        $("title").text("YouTube Audio");
-    }
-
-    selectBestOption(youtubeVideoID, autoplay = false) {
-        setTimeout(() => this.setState({ loading: true }));
-        $.ajax({
-            async: true,
-            type: "GET",
-            url: "https://yt-audio-api.herokuapp.com/api/" + youtubeVideoID + "/formats",
-            success: (response) => {
-                response = response
-                    .filter(e => this.state.compatibility.m4a && e.container === 'm4a')
-                    .concat(response.filter(e => this.state.compatibility.vorbis && e.extra.startsWith('vorbis')))
-                    .concat(response.filter(e => this.state.compatibility.opus && e.extra.startsWith('opus')));
-                if(response.length === 0){
-                    this.setState({ loading: false });
-                    this.loadingToast.error('No compatible sources for your browser',
-                                            'We could not find any compatible sources for your browser. It seems ' +
-                                            'that your browser doesn\'t support neither Opus, Vorbis nor AAC.');
-                    return;
-                }
-                response.forEach(e => {
-                    let bits = e.extra.split(/[\s@k]+/g);
-                    e.codec = bits[0]; e.bitrate = parseInt(bits[1], 10);
-                    if (e.codec !== "vorbis" && e.codec !== "opus")
-                        e.codec = "m4a";
-                });
-                response.sort(this.predicateBy("bps", true));
-                this.setState({
-                    currentFormat: response[0].codec + "@~" + (response[0].bitrate ? response[0].bitrate : response[0].bps) + "kbps",
-                    qualityFromAudio: response[0].id
-                });
-                this.loadAudioURL(youtubeVideoID, response[0].id, autoplay);
-            },
-            error: () => {
-                this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "" })
-                this.loadingToast.error('Video not found', 'Check that the video URL exists or is complete.');
-            }
-        });
-    }
-
-    predicateBy(prop, desc){
-        return (a,b) => {
-            if (a[prop] > b[prop])
-                return desc ? -1 : 1;
-            else if(a[prop] < b[prop])
-                return desc ? 1 : -1;
-            else
-                 return 0;
+        if(!this.state.youtubeAudioURL) {
+            //If it is not playing anything, then we can safely change that
+            $("title").text("YouTube Audio");
         }
     }
 
-    loadAudioURL(youtubeVideoID, formatID, autoplay = false) {
-        $.ajax({
-            async: true,
-            type: "GET",
-            url: "https://yt-audio-api.herokuapp.com/api/" + youtubeVideoID + "/" + formatID,
-            success: (response) => {
-                this.setState({
-                    youtubeAudioURL: response.url,
-                    youtubeVideoTitle: response.title,
-                    loading: false,
-                    scrobblingState: 'none'
-                }, () => {
-                    if(autoplay) {
-                        this.audioRef.current.oncanplay = e => {
-                            this.audioRef.current.play().catch(reason => toast.update(this.loadingToast._toast, {
-                                type: toast.TYPE.INFO,
-                                render: <NotifContent title='Press play manually' light={false}
-                                              text={'Due to your browser configuration, we cannot press play for you.' +
-                                                    ' You can change your autoplay options in the browser\'s configuration.'} />
-                            })).then(() => this.loadingToast.dismiss());
-                            this.audioRef.current.oncanplay = null;
-                        };
-                    } else {
-                        this.loadingToast.dismiss();
-                    }
-                });
-                $("title").text(this.state.youtubeVideoTitle + " - YouTube Audio");
-            },
-            error: () => {
-                this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "" });
-                this.loadingToast.error('Video not found', 'Check that the video URL exists or is complete.');
-            }
-        });
-    }
-
+    /**
+     * Tests whether the URL is a YouTube video and extract the video ID from it.
+     * @param {string} url URL to test
+     * @returns the YouTube video ID if the URL is valid, or null otherwise
+     */
     getYoutubeVideoID(url){
         let youtubeVideoID =
             /(?:(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\/?\?v=(.+))|(?:(?:https?:\/\/)?(?:www\.)?youtu\.be\/(.+))/
@@ -280,6 +230,11 @@ class App extends Component {
         return null;
     }
 
+    /**
+     * Tests whether the URL is a YouTube playlist and extract the playlist ID from it.
+     * @param {string} url URL to test
+     * @returns the YouTube playlist ID if the URL is valid, or null otherwise
+     */
     getPlaylistID(url) {
         let youtubePlaylistID = /playlist\?list=([A-Za-z0-9-_]+)/g.exec(url);
         if(youtubePlaylistID !== null) {
@@ -293,16 +248,28 @@ class App extends Component {
         this.setState({ nightMode: !this.state.nightMode });
     }
 
-    formatTime(currentTime){
-        let time = Math.round(currentTime);
-        let seconds = time - (Math.floor(time/60)*60);
-        return Math.floor(time/60) + ":" + (seconds < 10 ? "0"+seconds : seconds);
+    /**
+     * Converts a time in seconds to `{hour:}minutes:seconds` format.
+     * @param {number} currentTime Time in seconds
+     * @param {boolean} hour True if should show with the hour too
+     * @returns The time formated
+     */
+    formatTime(currentTime, hour){
+        const seconds = Math.round(currentTime) % 60;
+        let minutes = Math.floor(Math.round(currentTime) / 60);
+        if(!hour) {
+            return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        } else {
+            const hours = Math.floor(minutes / 60);
+            minutes %= 60;
+            return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
     }
 
     titleProgress(event){
         const currentTime = this.audioRef.current.currentTime;
         let duration = this.audioRef.current.duration;
-        let time = this.formatTime(currentTime);
+        let time = this.formatTime(currentTime, duration >= 3600);
         $("title").text(`${this.state.isPlaying ? "▶" : "▮▮"} ${time} - ${this.state.youtubeVideoTitle} - YouTube Audio`);
 
         if(navigator.userAgent.indexOf('Safari/') !== -1) {
@@ -311,6 +278,7 @@ class App extends Component {
         }
 
         if(this.lastfm.hasLoggedIn) {
+            //We must end the nowPlaying, if the title is available
             if(this.state.scrobblingState === 'none') {
                 const parsed = parseTitle(this.state.youtubeVideoTitle);
                 if(parsed) {
@@ -324,6 +292,8 @@ class App extends Component {
                     this.setState({ scrobblingState: 'nowPlaying' });
                 }
             } else if(this.state.scrobblingState === 'nowPlaying' && currentTime >= Math.min(duration / 2, 240)) {
+                //At the half of the song or when it reaches 4min, the scrobble must be sent, but only if
+                //we can get the song's title
                 const parsed = parseTitle(this.state.youtubeVideoTitle);
                 if(parsed) {
                     this.setState({ scrobblingState: null });
@@ -340,6 +310,7 @@ class App extends Component {
 
         if(currentTime > duration && currentTime - duration > 1) {
             //Workaround for Safari m4a playing bug
+            this.audioRef.current.pause();
             this.onSongEnd(null);
         }
     }
@@ -351,7 +322,7 @@ class App extends Component {
     onSongEnd(event) {
         this.setState({ playQueue: this.state.playQueue.deleteFirst(), scrobblingState: 'none' }, () => {
             if (this.state.playQueue.values.length > 0) {
-                this.selectBestOption(this.state.playQueue.values[0].id, true);
+                this.loadSong(this.state.playQueue.values[0].id, true);
             }
         });
     }
@@ -412,13 +383,17 @@ class App extends Component {
                 ${this.formatTime(this.audioRef.current.currentTime)} - ${this.state.youtubeVideoTitle} - YouTube Audio`
             );
         }
+
+        if(!prevState.nightMode && this.state.nightMode) {
+            $('body').addClass('AppDark').removeClass('AppLight');
+        } else if(prevState.nightMode && !this.state.nightMode) {
+            $('body').removeClass('AppDark').addClass('AppLight');
+        }
     }
 
     render() {
         const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, nightMode,
             showingQueue, currentFormat, playQueue } = this.state;
-        if(nightMode) $('body').addClass('AppDark').removeClass('AppLight');
-        else $('body').removeClass('AppDark').addClass('AppLight');
         return (
             <div id="AppContainer">
                 <Header nightMode={ nightMode } nightModeListener={ this.nightModeListener } />
