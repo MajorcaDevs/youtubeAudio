@@ -99,6 +99,11 @@ export class Lastfm {
         window.location.assign(`http://www.last.fm/api/auth/?api_key=${keys.LAST_FM_KEY}&cb=${encodeURIComponent(currentUrl)}`);
     }
 
+    deauthenticate() {
+        window.localStorage.removeItem('lastfm');
+        window.location.reload();
+    }
+
     updateNowPlaying(metadata) {
         if(metadata.title && metadata.artist && !this._disableScrobblings) {
             return this._makeRequest('post', {

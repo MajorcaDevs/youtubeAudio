@@ -39,7 +39,7 @@ class App extends Component {
             scrobblingState: 'none', // 'none', 'nowPlaying', 'scrobbled'
         });
         this.audioRef = React.createRef();
-        this.lastfm = new Lastfm(); window.xd = () => this.lastfm.startAuthentication(); window.xD = v => this.lastfm.disableScrobblings = !!v;
+        this.lastfm = new Lastfm(); window.xD = v => this.lastfm.disableScrobblings = !!v;
         this.listenerTestButton = this.listenerTestButton.bind(this);
         this.nightModeListener = this.nightModeListener.bind(this);
         this.onWindowKeyUp = this.onWindowKeyUp.bind(this);
@@ -396,7 +396,7 @@ class App extends Component {
             showingQueue, currentFormat, playQueue } = this.state;
         return (
             <div id="AppContainer">
-                <Header nightMode={ nightMode } nightModeListener={ this.nightModeListener } />
+                <Header nightMode={ nightMode } nightModeListener={ this.nightModeListener } lastfm={ this.lastfm } />
                 <div className="container-fluid">
                     <ToastContainer pauseOnHover={ false } />
                     <p className="greyText" id="greyText">
@@ -492,11 +492,16 @@ const NowPlayingText = ShowIf('title', ({ title, currentFormat }) => (
     </div>
 ));
 
-const Header = ({ nightMode, nightModeListener }) => (
+const Header = ({ nightMode, nightModeListener, lastfm }) => (
     <header className="AppHeader" id="AppHeader">
         <h1 className="App-title">YouTube Audio Player</h1>
         <button className="btn btn-sm btn-outline-light float-right onoffmode" id="changeSkinButton" onClick={ nightModeListener }>
             { !nightMode ? <i className="material-icons">brightness_2</i> : <i className="material-icons">wb_sunny</i>}
+        </button>
+        <button className="btn btn-sm btn-outline-light float-right lastfm" onClick={ () => !lastfm.hasLoggedIn ? lastfm.startAuthentication() : lastfm.deauthenticate() }>
+            <img src="https://www.last.fm/static/images/footer_logo@2x.49ca51948b0a.png" width={ 24 } alt={ lastfm.username } />
+            { lastfm.hasLoggedIn && <i className="material-icons"
+                                       style={{ position: 'absolute', top: 0, left: 0, fontSize: 34, marginLeft: 1, color: 'rgb(255, 180, 180)' }}>close</i>}
         </button>
     </header>
 );
