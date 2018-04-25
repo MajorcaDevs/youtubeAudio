@@ -251,13 +251,12 @@ class App extends Component {
     /**
      * Converts a time in seconds to `{hour:}minutes:seconds` format.
      * @param {number} currentTime Time in seconds
-     * @param {boolean} hour True if should show with the hour too
      * @returns The time formated
      */
-    formatTime(currentTime, hour){
+    formatTime(currentTime) {
         const seconds = Math.round(currentTime) % 60;
         let minutes = Math.floor(Math.round(currentTime) / 60);
-        if(!hour) {
+        if(!this.audioRef.current || this.audioRef.current.duration < 3600) {
             return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
         } else {
             const hours = Math.floor(minutes / 60);
@@ -269,7 +268,7 @@ class App extends Component {
     titleProgress(event){
         const currentTime = this.audioRef.current.currentTime;
         let duration = this.audioRef.current.duration;
-        let time = this.formatTime(currentTime, duration >= 3600);
+        let time = this.formatTime(currentTime);
         $("title").text(`${this.state.isPlaying ? "▶" : "▮▮"} ${time} - ${this.state.youtubeVideoTitle} - YouTube Audio`);
 
         if(navigator.userAgent.indexOf('Safari/') !== -1) {
