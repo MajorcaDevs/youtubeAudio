@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import $ from 'jquery';
 import { ToastContainer, toast, style } from 'react-toastify';
 import { Spring } from 'react-spring';
+import bowser from 'bowser';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'material-design-icons/iconfont/material-icons.css';
 import './styles/App/App.css';
@@ -271,7 +272,7 @@ class App extends Component {
         let time = this.formatTime(currentTime);
         $("title").text(`${this.state.isPlaying ? "▶" : "▮▮"} ${time} - ${this.state.youtubeVideoTitle} - YouTube Audio`);
 
-        if(navigator.userAgent.indexOf('Safari/') !== -1) {
+        if(bowser.safari) {
             //Workaround for Safari m4a playing bug
             duration /= 2;
         }
