@@ -102,7 +102,7 @@ class App extends Component {
             this.loadSong(this.state.youtubeVideoID, true);
         } else if(this.state.youtubePlaylistID) {
             this.loadPlaylist(true);
-        } else if(this.state.playQueue.values.length > 0 && this.state.youtubeVideoURL) {
+        } else if(this.state.playQueue.values.length > 0 && !this.state.youtubeVideoURL) {
             this.loadSong(this.state.playQueue.values[0].id);
         }
     }
@@ -429,10 +429,10 @@ class App extends Component {
                                 <div className="btn-group mt-3">
                                     <Button nightMode={ nightMode }
                                            id="test" name="Play Song" value="Play Now!" onClick={ this.playSong }
-                                           disabled={loading}/>
+                                           disabled={(loading || invalidURL || youtubeVideoURL.length === 0) && playQueue.values.length < 1}/>
                                     <Button nightMode={ nightMode }
                                            id="test" name="Add to Queue" value="Enqueue" onClick={ this.addToQueue }
-                                           disabled={loading}/>
+                                           disabled={loading || invalidURL || youtubeVideoURL.length === 0}/>
                                     <Button nightMode={ nightMode }
                                            id="test" name="Clear queueue" value="Clear Queue" onClick={ this.clear }
                                            disabled={loading || playQueue.values.length < 2}/>
