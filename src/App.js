@@ -222,11 +222,16 @@ class App extends Component {
      */
     getYoutubeVideoID(url){
         let youtubeVideoID =
-            /(?:(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\/?\?v=(.+))|(?:(?:https?:\/\/)?(?:www\.)?youtu\.be\/(.+))/
+            /(?:(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\/?\?(.+))|(?:(?:https?:\/\/)?(?:www\.)?youtu\.be\/(.+))/
                 .exec(url);
-        if (youtubeVideoID !== null)
-            return youtubeVideoID[1] || youtubeVideoID[2];
-        else
+        if (youtubeVideoID !== null) {
+            if(youtubeVideoID[2]) {
+                return youtubeVideoID[2];
+            } else if(youtubeVideoID[1]) {
+                let query = App.parseQuery(youtubeVideoID[1]);
+                return query.v;
+            }
+        } else
             this.setState({loading: false});
         return null;
     }
@@ -237,11 +242,23 @@ class App extends Component {
      * @returns the YouTube playlist ID if the URL is valid, or null otherwise
      */
     getPlaylistID(url) {
-        let youtubePlaylistID = /playlist\?list=([A-Za-z0-9-_]+)/g.exec(url);
+        let youtubePlaylistID = /playlist\?(.+)/g.exec(url);
         if(youtubePlaylistID !== null) {
-            return youtubePlaylistID[1]
+            return App.parseQuery(youtubePlaylistID[1]).list;
         }
         return null;
+    }
+
+    /**
+     * Converts the the query of an URL into a JS object
+     * @param {string} str The query of an URL (the part that starts with ?) but without the initial ?
+     * @returns A JS Object that represents the query
+     */
+    static parseQuery(str) {
+        return str
+            .split('&')
+            .map(e => e.split('='))
+            .reduce((obj, last) => ({ ...obj, [last[0]]: last[1] }), {});
     }
 
     nightModeListener(event){
