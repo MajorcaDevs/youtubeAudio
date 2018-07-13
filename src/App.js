@@ -339,7 +339,7 @@ class App extends Component {
         case event.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED: {
             const { youtubeVideoID, qualityFromAudio } = this.state;
             this.setState({
-                youtubeAudioURL: `https://yt-audio-api.herokuapp.com/api/${youtubeVideoID}/${qualityFromAudio}/passthrough`
+                youtubeAudioURL: `https://ytdl-audio-api.melchor9000.me/api/${youtubeVideoID}/${qualityFromAudio}/passthrough`
             });
             break;
         }

@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import { GOOGLE_API_KEY } from './keys.json';
-const BASE_API_URL = "https://yt-audio-api.herokuapp.com/api";
+const BASE_API_URL = "https://ytdl-audio-api.melchor9000.me/api";
 
 const compatibility = (function() {
     let a = document.createElement("audio");
