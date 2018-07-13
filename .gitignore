@@ -6,3 +6,4 @@ build/
 package-lock.json
 yarn.lock
 src/styles/**/*.css
+.env.local

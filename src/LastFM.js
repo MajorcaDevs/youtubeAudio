@@ -1,5 +1,5 @@
 import md5 from 'blueimp-md5';
-import keys from './keys.json';
+import { LASTFM_API_KEY, LASTFM_SECRET } from './keys';
 
 import { doTest } from './lastfm.parseTitle.test';
 
@@ -96,7 +96,7 @@ export class Lastfm {
 
     startAuthentication() {
         const currentUrl = window.location.toString();
-        window.location.assign(`http://www.last.fm/api/auth/?api_key=${keys.LAST_FM_KEY}&cb=${encodeURIComponent(currentUrl)}`);
+        window.location.assign(`http://www.last.fm/api/auth/?api_key=${LASTFM_API_KEY}&cb=${encodeURIComponent(currentUrl)}`);
     }
 
     deauthenticate() {
@@ -133,7 +133,7 @@ export class Lastfm {
 
     _makeRequest(method, params, requiresSignature = true) {
         let mParams = new Map(params instanceof Map ? params : Object.entries(params));
-        mParams.set('api_key', keys.LAST_FM_KEY);
+        mParams.set('api_key', LASTFM_API_KEY);
         if(this._userToken) {
             mParams.set('sk', this._userToken);
         }
@@ -159,7 +159,7 @@ export class Lastfm {
             .sort((a, b) => a.key.localeCompare(b.key))
             .map((value, key) => key + value)
             .reduce((prev, value) => prev + value, '')
-            + keys.LAST_FM_SECRET;
+            + LASTFM_SECRET;
         return md5(sig);
     }
 }
