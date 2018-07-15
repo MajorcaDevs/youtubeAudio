@@ -9,6 +9,7 @@ import './styles/App/App.css';
 import github from './github.svg';
 import PlayQueue from './PlayQueue';
 import PlayQueueList from './PlayQueueList';
+import SearchPanel from './SearchPanel';
 import { Lastfm, parseTitle } from './LastFM';
 import { selectBestOption, loadAudioURL, addYoutubePlaylist } from './api';
 // import AdBlockDetect from 'react-ad-block-detect';
@@ -34,6 +35,7 @@ class App extends Component {
             currentFormat: "",
             youtubeVideoID: "",
             showingQueue: false,
+            showingSearch: false,
             youtubePlaylistID: "",
             playQueue: new PlayQueue(),
             isPlaying: false,
@@ -43,13 +45,16 @@ class App extends Component {
         this.lastfm = new Lastfm(); window.xD = v => this.lastfm.disableScrobblings = !!v;
         this.listenerTestButton = this.listenerTestButton.bind(this);
         this.nightModeListener = this.nightModeListener.bind(this);
+        this.enqueueFromSeach = this.enqueueFromSeach.bind(this);
         this.onWindowKeyUp = this.onWindowKeyUp.bind(this);
         this.titleProgress = this.titleProgress.bind(this);
+        this.playFromSeach = this.playFromSeach.bind(this);
         this.listenerForm = this.listenerForm.bind(this);
         this.onSongError = this.onSongError.bind(this);
         this.addToQueue = this.addToQueue.bind(this);
         this.formatTime = this.formatTime.bind(this);
         this.showQueue = this.showQueue.bind(this);
+        this.showSearch = this.showSearch.bind(this);
         this.onSongEnd = this.onSongEnd.bind(this);
         this.playSong = this.playSong.bind(this);
         this.onPause = this.onPause.bind(this);
@@ -72,7 +77,7 @@ class App extends Component {
                     loading: false,
                     playQueue: this.state.playQueue.add({
                         id: this.state.youtubeVideoID,
-                        title: title
+                        title
                     })
                 }, () => {
                     if (this.state.playQueue.values.length && !this.state.youtubeAudioURL){
@@ -105,6 +110,14 @@ class App extends Component {
         } else if(this.state.playQueue.values.length > 0 && !this.state.youtubeVideoURL) {
             this.loadSong(this.state.playQueue.values[0].id);
         }
+    }
+
+    enqueueFromSeach(item) {
+        this.setState({ youtubeVideoID: item.id.videoId }, () => this.addToQueue());
+    }
+
+    playFromSeach(item) {
+        this.setState({ youtubeVideoID: item.id.videoId }, () => this.playSong());
     }
 
     /**
@@ -367,7 +380,18 @@ class App extends Component {
 
     showQueue(event) {
         event.preventDefault();
-        this.setState({showingQueue: !this.state.showingQueue});
+        this.setState({
+            showingQueue: !this.state.showingQueue,
+            showingSearch: !this.state.showingQueue ? false : this.state.showingSearch
+        });
+    }
+
+    showSearch(event) {
+        event.preventDefault();
+        this.setState({
+            showingSearch: !this.state.showingSearch,
+            showingQueue: !this.state.showingSearch ? false : this.state.showingQueue
+        });
     }
 
     onWindowKeyUp(event) {
@@ -410,7 +434,7 @@ class App extends Component {
 
     render() {
         const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, nightMode,
-            showingQueue, currentFormat, playQueue } = this.state;
+            showingQueue, currentFormat, playQueue, showingSearch } = this.state;
         return (
             <div id="AppContainer">
                 <Header nightMode={ nightMode } nightModeListener={ this.nightModeListener } lastfm={ this.lastfm } />
@@ -464,7 +488,9 @@ class App extends Component {
                         </div>
                     </div>
                     <PlayQueueList showing={ showingQueue } playQueue={ this.state.playQueue }/>
-                    <PlayQueueListButton onClick={ this.showQueue } showingQueue={ showingQueue } nightMode={ nightMode } />
+                    <SearchPanel showing={ showingSearch } onPlayClicked={ this.playFromSeach } onEnqueueClicked={ this.enqueueFromSeach } />
+                    <PlayQueueListButton onClick={ this.showQueue } showingQueue={ showingQueue } nightMode={ nightMode } left={ showingQueue || showingSearch } />
+                    <SearchButton onClick={ this.showSearch } showingSearch={ showingSearch } nightMode={ nightMode } left={ showingQueue || showingSearch } />
                 </div>
 
                 <Footer />
@@ -541,15 +567,29 @@ const NotifContent = ({ title, text, light }) => (
     </div>
 );
 
-const PlayQueueListButton = ({ showingQueue, nightMode, onClick }) => (
+const PlayQueueListButton = ({ showingQueue, nightMode, onClick, left }) => (
     <Spring from={{ right: 15 }}
-            to={{ right: showingQueue ? Math.min(-PlayQueueList._right + 15, document.body.clientWidth - 45) : 15 }}>
+            to={{ right: left ? Math.min(-PlayQueueList._right + 15, document.body.clientWidth - 45) : 15 }}>
         { styles =>
             <button id="playQueue"
                     style={ styles }
                     className={`btn ${showingQueue ? 'right' : 'left'} btn-outline-${ nightMode ? 'light' : 'dark' }`}
                     onClick={ onClick }>
                 <div id="arrow" className={`${showingQueue ? 'right' : 'left'}`}/>
+            </button>
+        }
+    </Spring>
+);
+
+const SearchButton = ({ showingSearch, nightMode, onClick, left }) => (
+    <Spring from={{ right: 15 }}
+            to={{ right: left ? Math.min(-SearchPanel._right + 15, document.body.clientWidth - 45) : 15 }}>
+        { styles =>
+            <button id="searchPanelButton"
+                    style={ styles }
+                    className={`btn ${showingSearch ? 'right' : 'left'} btn-outline-${ nightMode ? 'light' : 'dark' }`}
+                    onClick={ onClick }>
+                <i className="material-icons">search</i>
             </button>
         }
     </Spring>

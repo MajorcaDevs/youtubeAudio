@@ -139,7 +139,7 @@ body {
     margin-bottom: 10px;
 }
 
-#playQueue {
+#playQueue, #searchPanelButton {
     position: absolute;
     bottom: 90px;
     right: 15px;
@@ -163,6 +163,22 @@ body {
     &.right {
         & > #arrow {
             transform: rotate(-45deg);
+        }
+
+        & > .material-icons {
+            transform: rotateY(180deg);
+        }
+
+        .AppDark & {
+            background-color: #FFF;
+            & .material-icons { color: #111 }
+            & #arrow { border-color: #111 }
+        }
+
+        .AppLight & {
+            background-color: #111;
+            & .material-icons { color: #FFF }
+            & #arrow { border-color: #FFF }
         }
     }
 
@@ -191,6 +207,15 @@ body {
             @media (max-width: 575px) { border-color: white; }
         }
     }
+}
+
+#searchPanelButton {
+    bottom: 90px + 24px + 20px;
+    padding: 5px;
+    padding-bottom: 0;
+    padding-top: 5px;
+
+    @media (max-width: 575px) { bottom: 15px + 24px + 20px }
 }
 
 .btn:focus {

@@ -108,5 +108,66 @@ export const addYoutubePlaylist = (youtubePlaylistID, nextId = null) => new Prom
         },
         error: () => reject(new ApiException('Cannot load videos from playlist',
                                              'Something bad has happened while we were asking to YouTube for the videos in that playlist :('))
-    })
+    });
 });
+
+/**
+ * Prepares a Youtube Video Search with the query and returns a class with getNextPage() and hasEnded.
+ * getNextPage() returns a promise with more results, and hasEnded returns true if there's no more
+ * results to retreive.
+ * @param {string} query Query of the search
+ * @param {number} maxResults Number of results per page (10 by default)
+ */
+export const searchVideos = (query, maxResults = 10) => {
+    class YoutubeVideoSearch {
+        constructor() {
+            this.url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&key=${GOOGLE_API_KEY}&maxResults=${Math.min(maxResults, 50)}`;
+            this.nextPageToken = null;
+            this.totalListed = 0;
+            this.total = NaN;
+        }
+
+        getNextPage() {
+            if(this.hasEnded) {
+                return Promise.reject(new Error("End of the list"));
+            }
+
+            return new Promise((resolve, reject) => {
+                let url = this.url;
+                if(this.nextPageToken) {
+                    url += `&pageToken=${this.nextPageToken}`;
+                }
+
+                $.ajax({
+                    url,
+                    async: true,
+                    type: 'GET',
+                    success: response => {
+                        if(response.nextPageToken) {
+                            this.nextPageToken = response.nextPageToken;
+                        }
+                        this.totalListed += response.items.length;
+                        this.total = response.pageInfo.totalResults;
+                        resolve(response.items);
+                    },
+                    error: () => reject(new ApiException('Cannot search for videos',
+                                                         'Something bad has happened while we were asking to YouTube for videos :('))
+                })
+            });
+        }
+
+        get hasEnded() {
+            return this.totalListed === this.total;
+        }
+
+        get loadedPages() {
+            return Math.ceil(this.totalListed / maxResults);
+        }
+
+        get totalPages() {
+            return Math.ceil(this.total / maxResults);
+        }
+    }
+
+    return new YoutubeVideoSearch();
+};

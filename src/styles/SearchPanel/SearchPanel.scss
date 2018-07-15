@@ -1,0 +1,43 @@
+#searchPanel {
+    > div {
+        height: 100%;
+        position: relative;
+    }
+
+    .container {
+        overflow-x: hidden;
+        overflow-y: scroll;
+        height: calc(100% - 75px - 2.5em);
+        position: relative;
+    }
+
+    .search-panel-pagination {
+        .btn {
+            padding: 0;
+            padding-top: 4px;
+
+            &:nth-child(2) {
+                padding: 0 12px;
+                padding-bottom: 3px;
+            }
+        }
+
+        &:nth-child(1) {
+            margin-bottom: 0.25em;
+        }
+    }
+
+    .result {
+        line-height: 1;
+
+        a {
+            padding-top: 0.25em;
+        }
+
+        .col.row {
+            > .col-12 {
+                padding: 0;
+            }
+        }
+    }
+}
