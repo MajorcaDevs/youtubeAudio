@@ -121,7 +121,7 @@ export const addYoutubePlaylist = (youtubePlaylistID, nextId = null) => new Prom
 export const searchVideos = (query, maxResults = 10) => {
     class YoutubeVideoSearch {
         constructor() {
-            this.url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&key=${GOOGLE_API_KEY}&maxResults=${Math.min(maxResults, 50)}`;
+            this.url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&key=${GOOGLE_API_KEY}&maxResults=${Math.min(maxResults, 50)}&type=video,playlist`;
             this.nextPageToken = null;
             this.totalListed = 0;
             this.total = NaN;

@@ -113,11 +113,19 @@ class App extends Component {
     }
 
     enqueueFromSeach(item) {
-        this.setState({ youtubeVideoID: item.id.videoId }, () => this.addToQueue());
+        if(item.id.kind === 'youtube#video') {
+            this.setState({ youtubeVideoID: item.id.videoId }, () => this.addToQueue());
+        } else if(item.id.kind === 'youtube#playlist') {
+            this.setState({ youtubePlaylistID: item.id.playlistId }, () => this.addToQueue());
+        }
     }
 
     playFromSeach(item) {
-        this.setState({ youtubeVideoID: item.id.videoId }, () => this.playSong());
+        if(item.id.kind === 'youtube#video') {
+            this.setState({ youtubeVideoID: item.id.videoId }, () => this.playSong());
+        } else if(item.id.kind === 'youtube#playlist') {
+            this.setState({ youtubePlaylistID: item.id.playlistId }, () => this.playSong());
+        }
     }
 
     /**
