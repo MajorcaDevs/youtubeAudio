@@ -57,6 +57,7 @@ class App extends Component {
         this.showSearch = this.showSearch.bind(this);
         this.onSongEnd = this.onSongEnd.bind(this);
         this.playSong = this.playSong.bind(this);
+        this.nextSong = this.nextSong.bind(this);
         this.onPause = this.onPause.bind(this);
         this.onPlay = this.onPlay.bind(this);
         this.clear = this.clear.bind(this);
@@ -357,7 +358,7 @@ class App extends Component {
 
     onPause(){ this.setState({isPlaying: false}); }
 
-    onSongEnd(event) {
+    onSongEnd() {
         this.setState({ playQueue: this.state.playQueue.deleteFirst(), scrobblingState: 'none' }, () => {
             if (this.state.playQueue.values.length > 0) {
                 this.loadSong(this.state.playQueue.values[0].id, true);
@@ -400,6 +401,11 @@ class App extends Component {
             showingSearch: !this.state.showingSearch,
             showingQueue: !this.state.showingSearch ? false : this.state.showingQueue
         });
+    }
+
+    nextSong(event) {
+        event.preventDefault();
+        this.onSongEnd();
     }
 
     onWindowKeyUp(event) {
@@ -477,14 +483,17 @@ class App extends Component {
                             <div className="row justify-content-center">
                                 <div className="btn-group mt-3">
                                     <Button nightMode={ nightMode }
-                                           id="test" name="Play Song" value="Play Now!" onClick={ this.playSong }
-                                           disabled={(loading || invalidURL || youtubeVideoURL.length === 0) && playQueue.values.length < 1}/>
+                                            name="Play Song" value="Play Now!" onClick={ this.playSong }
+                                            disabled={(loading || invalidURL || youtubeVideoURL.length === 0) && playQueue.values.length < 1}/>
                                     <Button nightMode={ nightMode }
-                                           id="test" name="Add to Queue" value="Enqueue" onClick={ this.addToQueue }
-                                           disabled={loading || invalidURL || youtubeVideoURL.length === 0}/>
+                                            name="Add to Queue" value="Enqueue" onClick={ this.addToQueue }
+                                            disabled={loading || invalidURL || youtubeVideoURL.length === 0}/>
                                     <Button nightMode={ nightMode }
-                                           id="test" name="Clear queueue" value="Clear Queue" onClick={ this.clear }
-                                           disabled={loading || playQueue.values.length < 2}/>
+                                            name="Clear queueue" value="Clear Queue" onClick={ this.clear }
+                                            disabled={loading || playQueue.values.length < 2}/>
+                                    <Button nightMode={ nightMode }
+                                            name="Next song" value="Next Song" onClick={ this.nextSong }
+                                            disabled={loading || playQueue.values.length < 1}/>
                                 </div>
                             </div>
                             <NowPlayingText title={youtubeVideoTitle} currentFormat={currentFormat} />
