@@ -5,7 +5,6 @@
     right: 0;
     top: 0;
     margin-top: 75px;
-    //margin-bottom: -150px;
     z-index: 10;
     transition: background-color 1s, color 1s;
 
@@ -31,5 +30,76 @@
 
     .AppDark & {
         background-color: #181818;
+    }
+
+    .edit-icon {
+        position: absolute;
+        top: 5px;
+        right: 15px;
+
+        .edit-button {
+            background: none;
+            color: inherit;
+
+            .material-icons {
+                font-size: 16px;
+            }
+
+            &.active {
+                .AppDark & {
+                    background-color: #444;
+                }
+
+                .AppLight & {
+                    background-color: #BBB;
+                }
+            }
+        }
+    }
+
+    .list-container {
+        margin-bottom: 100px;
+        padding-left: 15px;
+        padding-right: 15px;
+
+        .reorder-icon {
+            .material-icons { font-size: 18px; }
+
+            .AppDark & {
+                color: grey;
+            }
+
+            .AppLight & {
+                color: #333;
+            }
+        }
+
+        .delete-icon {
+            transition: color .15s ease-in-out;
+
+            .material-icons { font-size: 18px; }
+            button { padding: 0; }
+
+            .AppDark & {
+                color: #999;
+            }
+
+            .AppLight & {
+                color: #444;
+            }
+
+            .AppDark & button:hover {
+                color: #E53935;
+            }
+
+            .AppLight & button:hover {
+                color: #B71C1C;
+            }
+
+            .btn {
+                background: none;
+                color: inherit;
+            }
+        }
     }
 }

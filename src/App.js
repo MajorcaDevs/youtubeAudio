@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import $ from 'jquery';
-import { ToastContainer, toast, style } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import { Spring } from 'react-spring';
 import bowser from 'bowser';
 import 'bootstrap/dist/css/bootstrap.css';
@@ -12,14 +12,16 @@ import PlayQueueList from './PlayQueueList';
 import SearchPanel from './SearchPanel';
 import { Lastfm, parseTitle } from './LastFM';
 import { selectBestOption, loadAudioURL, addYoutubePlaylist } from './api';
+import 'react-toastify/dist/ReactToastify.min.css';
 // import AdBlockDetect from 'react-ad-block-detect';
 
-style({
+//TODO Averigüar como arreglarlo ahora, parece que hay que usar CSS
+/*style({
     TOP_RIGHT: {
         top: '80px',
         right: '1em'
     }
-});
+});*/
 
 class App extends Component {
     constructor (props) {
@@ -43,6 +45,8 @@ class App extends Component {
         });
         this.audioRef = React.createRef();
         this.lastfm = new Lastfm(); window.xD = v => this.lastfm.disableScrobblings = !!v;
+        this.onPlaylistItemReorder = this.onPlaylistItemReorder.bind(this);
+        this.onPlaylistItemRemove = this.onPlaylistItemRemove.bind(this);
         this.listenerTestButton = this.listenerTestButton.bind(this);
         this.nightModeListener = this.nightModeListener.bind(this);
         this.enqueueFromSeach = this.enqueueFromSeach.bind(this);
@@ -137,7 +141,7 @@ class App extends Component {
      * prepares the player
      * @param {boolean} autoplay When the player is ready, if it is true, then will start playing automatically
      */
-    async loadSong(youtubeVideoID, autoplay) {
+    async loadSong(youtubeVideoID, autoplay = false) {
         this.setState({ loading: true });
         try {
             const { codec, bitrate, bps, id } = await selectBestOption(youtubeVideoID);
@@ -155,7 +159,7 @@ class App extends Component {
             }, () => {
                 $("title").text(`${this.state.youtubeVideoTitle} - YouTube Audio`);
                 if(autoplay) {
-                    this.audioRef.current.oncanplay = async (e) => {
+                    this.audioRef.current.oncanplay = async () => {
                         try {
                             await this.audioRef.current.play();
                             this.loadingToast.dismiss();
@@ -240,7 +244,7 @@ class App extends Component {
     /**
      * Tests whether the URL is a YouTube video and extract the video ID from it.
      * @param {string} url URL to test
-     * @returns the YouTube video ID if the URL is valid, or null otherwise
+     * @returns String|null the YouTube video ID if the URL is valid, or null otherwise
      */
     getYoutubeVideoID(url){
         let youtubeVideoID =
@@ -261,7 +265,7 @@ class App extends Component {
     /**
      * Tests whether the URL is a YouTube playlist and extract the playlist ID from it.
      * @param {string} url URL to test
-     * @returns the YouTube playlist ID if the URL is valid, or null otherwise
+     * @returns Object|null the YouTube playlist ID if the URL is valid, or null otherwise
      */
     getPlaylistID(url) {
         let youtubePlaylistID = /playlist\?(.+)/g.exec(url);
@@ -274,7 +278,7 @@ class App extends Component {
     /**
      * Converts the the query of an URL into a JS object
      * @param {string} str The query of an URL (the part that starts with ?) but without the initial ?
-     * @returns A JS Object that represents the query
+     * @returns Object A JS Object that represents the query
      */
     static parseQuery(str) {
         return str
@@ -291,7 +295,7 @@ class App extends Component {
     /**
      * Converts a time in seconds to `{hour:}minutes:seconds` format.
      * @param {number} currentTime Time in seconds
-     * @returns The time formated
+     * @returns string The time formated
      */
     formatTime(currentTime) {
         const seconds = Math.round(currentTime) % 60;
@@ -305,7 +309,7 @@ class App extends Component {
         }
     }
 
-    titleProgress(event){
+    titleProgress(){
         const currentTime = this.audioRef.current.currentTime;
         let duration = this.audioRef.current.duration;
         let time = this.formatTime(currentTime);
@@ -408,6 +412,20 @@ class App extends Component {
         this.onSongEnd();
     }
 
+    onPlaylistItemReorder(startIndex, endIndex) {
+        const playQueue = this.state.playQueue.reorder(startIndex, endIndex);
+        this.setState({
+            playQueue
+        });
+    }
+
+    onPlaylistItemRemove(element) {
+        const playQueue = this.state.playQueue.delete(element);
+        this.setState({
+            playQueue
+        });
+    }
+
     onWindowKeyUp(event) {
         if(event.code === 'Space' && event.target.getAttribute('id') !== "videoURL") {
             if(this.audioRef.current) {
@@ -504,7 +522,10 @@ class App extends Component {
                             }
                         </div>
                     </div>
-                    <PlayQueueList showing={ showingQueue } playQueue={ this.state.playQueue }/>
+                    <PlayQueueList showing={ showingQueue }
+                                   playQueue={ this.state.playQueue }
+                                   onPlaylistItemReorder={ this.onPlaylistItemReorder }
+                                   onPlaylistItemRemove={ this.onPlaylistItemRemove } />
                     <SearchPanel showing={ showingSearch } onPlayClicked={ this.playFromSeach } onEnqueueClicked={ this.enqueueFromSeach } />
                     <PlayQueueListButton onClick={ this.showQueue } showingQueue={ showingQueue } nightMode={ nightMode } left={ showingQueue || showingSearch } />
                     <SearchButton onClick={ this.showSearch } showingSearch={ showingSearch } nightMode={ nightMode } left={ showingQueue || showingSearch } />
@@ -526,7 +547,7 @@ const ShowIf = (name, func) => {
             return null;
         }
     }
-}
+};
 
 const Button = props => {
     let lprops = {...props};

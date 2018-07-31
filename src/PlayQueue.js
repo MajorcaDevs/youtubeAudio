@@ -6,13 +6,13 @@ export default class PlayQueue {
      * Creates a new PlayQueue. If `initialValue` is null or undefined will load the contents
      * from the session storage (you should use this behaviour). If it's defined, then the
      * contents are defined from this value and stored into the session storage (used by the
-     * class to implement inmutability).
+     * class to implement immutability).
      *
-     * The class **is inmutable**, meaning that everything you do doesn't modify the object
+     * The class **is immutable**, meaning that everything you do doesn't modify the object
      * itself. Instead, returns a copy of the queue with the modification applied.
      * @param {Array} initialValue initial content for the queue (used in general by internal API)
      */
-    constructor(initialValue) {
+    constructor(initialValue = undefined) {
         if(initialValue) {
             this._array = initialValue;
             this._store();
@@ -36,7 +36,7 @@ export default class PlayQueue {
      * @returns PlayQueue with the new elements added
      */
     add(...elements) {
-       return new PlayQueue([...this.values, ...elements ]);
+        return new PlayQueue([...this.values, ...elements ]);
     }
 
     /**
@@ -50,7 +50,7 @@ export default class PlayQueue {
 
     /**
      * Empties the queue
-     * @returns A PlayQueue empty
+     * @returns PlayQueue A PlayQueue empty
      */
     emptyQueue(){
         return new PlayQueue([]);
@@ -67,7 +67,7 @@ export default class PlayQueue {
     /**
      * Searches the element by its id and removes it from the Queue
      * @param {{id: string}} element Element to remove
-     * @returns A PlayQueue with that element removed
+     * @returns PlayQueue A PlayQueue with that element removed
      */
     delete(element){
         let index = this.values.findIndex(searchElement => element.id === searchElement.id);
@@ -79,11 +79,25 @@ export default class PlayQueue {
     }
 
     /**
+     * Reorders the element from the start index to the final index. It supposes the indices are ok. 0 is for the first
+     * element in the queue, that is 1 on the array.
+     * @param startIndex Index of the element that will be moved
+     * @param endIndex Index of where the item will be placed
+     * @returns {PlayQueue} A copy of this, with the element reordered
+     */
+    reorder(startIndex, endIndex) {
+        const result = Array.from(this._array);
+        const [removed] = result.splice(startIndex + 1, 1);
+        result.splice(endIndex + 1, 0, removed);
+        return new PlayQueue(result);
+    }
+
+    /**
      * Stores the current queue in the session storage
      */
     _store() {
         try {
-            window.sessionStorage.setItem("playQueue", JSON.stringify(this._array))
+            window.sessionStorage.setItem('playQueue', JSON.stringify(this._array));
         } catch(e) {}
     }
 
