@@ -6,7 +6,7 @@ import './styles/PlayQueueList/PlayQueueList.css';
 
 
 const PlayQueueItem = ({ song, index, onRemove }) => (
-    <Draggable key={ `${index}-${song.id}` } draggableId={ song.id } index={ index }>
+    <Draggable key={ `${index}-${song.id}` } draggableId={ `${index}-${song.id}` } index={ index }>
         {(provided, snapshot) => (
             <div ref={ provided.innerRef }
                  { ...provided.draggableProps }
