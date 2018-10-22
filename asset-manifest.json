@@ -1,11 +1,17 @@
 {
-  "main.css": "static/css/main.ab122080.css",
-  "main.css.map": "static/css/main.ab122080.css.map",
-  "main.js": "static/js/main.1d49ecd0.js",
-  "main.js.map": "static/js/main.1d49ecd0.js.map",
-  "static/media/MaterialIcons-Regular.eot": "static/media/MaterialIcons-Regular.e79bfd88.eot",
-  "static/media/MaterialIcons-Regular.ttf": "static/media/MaterialIcons-Regular.a37b0c01.ttf",
-  "static/media/MaterialIcons-Regular.woff": "static/media/MaterialIcons-Regular.012cf6a1.woff",
-  "static/media/MaterialIcons-Regular.woff2": "static/media/MaterialIcons-Regular.570eb838.woff2",
-  "static/media/github.svg": "static/media/github.960ee6c3.svg"
+  "main.css": "/youtubeAudio/static/css/main.700f2006.chunk.css",
+  "main.js": "/youtubeAudio/static/js/main.5e26b7cf.chunk.js",
+  "main.js.map": "/youtubeAudio/static/js/main.5e26b7cf.chunk.js.map",
+  "static/css/1.142b35fe.chunk.css": "/youtubeAudio/static/css/1.142b35fe.chunk.css",
+  "static/js/1.ae5a234a.chunk.js": "/youtubeAudio/static/js/1.ae5a234a.chunk.js",
+  "static/js/1.ae5a234a.chunk.js.map": "/youtubeAudio/static/js/1.ae5a234a.chunk.js.map",
+  "runtime~main.js": "/youtubeAudio/static/js/runtime~main.649f9197.js",
+  "runtime~main.js.map": "/youtubeAudio/static/js/runtime~main.649f9197.js.map",
+  "static/media/github.svg": "/youtubeAudio/static/media/github.960ee6c3.svg",
+  "static/media/material-icons.css": "/youtubeAudio/static/media/MaterialIcons-Regular.e79bfd88.eot",
+  "static/css/main.700f2006.chunk.css.map": "/youtubeAudio/static/css/main.700f2006.chunk.css.map",
+  "static/css/1.142b35fe.chunk.css.map": "/youtubeAudio/static/css/1.142b35fe.chunk.css.map",
+  "index.html": "/youtubeAudio/index.html",
+  "precache-manifest.4d125d2fbbbed7ef520fef0703089623.js": "/youtubeAudio/precache-manifest.4d125d2fbbbed7ef520fef0703089623.js",
+  "service-worker.js": "/youtubeAudio/service-worker.js"
 }
