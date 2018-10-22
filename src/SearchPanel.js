@@ -66,7 +66,7 @@ export default class SearchPanel extends Component {
                             <div key={i} className="row mb-1 result">
                                 <div className="col-auto">
                                     { item.snippet.thumbnails &&
-                                        <img src={(item.snippet.thumbnails.medium || item.snippet.thumbnails.default).url} width={ 128 } onClick={ () => onPlayClicked(item) } />
+                                        <img src={(item.snippet.thumbnails.medium || item.snippet.thumbnails.default).url} alt="Video thumbnail" width={ 128 } onClick={ () => onPlayClicked(item) } />
                                     }
                                 </div>
                                 <div className="col row">

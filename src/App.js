@@ -443,6 +443,14 @@ class App extends Component {
     componentDidMount() {
         window.addEventListener('keyup', this.onWindowKeyUp);
         window.addEventListener('resize', () => this.forceUpdate());
+
+        //TODO Force redirect people from old place to the new one :)
+        if(window.location.hostname === 'majorcadevs.github.io') {
+            toast.info(<p>We've change the location to
+                <a href="https://youtubeAudio.majorcadevs.com">https://youtubeAudio.majorcadevs.com</a>.
+                <small>We'll redirect you to the new location when this notification is closed :)</small>
+            </p>, { onClose: () => window.location.assign('https://youtubeAudio.majorcadevs.com'), autoClose: 10000 })
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -511,7 +519,7 @@ class App extends Component {
                                             disabled={loading || playQueue.values.length < 2}/>
                                     <Button nightMode={ nightMode }
                                             name="Next song" value="Next Song" onClick={ this.nextSong }
-                                            disabled={loading || playQueue.values.length < 1}/>
+                                            disabled={loading || playQueue.values.length < 2}/>
                                 </div>
                             </div>
                             <NowPlayingText title={youtubeVideoTitle} currentFormat={currentFormat} />
