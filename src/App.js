@@ -11,7 +11,7 @@ import PlayQueue from './PlayQueue';
 import PlayQueueList from './PlayQueueList';
 import SearchPanel from './SearchPanel';
 import { Lastfm, parseTitle } from './LastFM';
-import { selectBestOption, loadAudioURL, addYoutubePlaylist } from './api';
+import { selectBestOption, loadAudioURL, addYoutubePlaylist, getPassthroughUrl } from './api';
 import 'react-toastify/dist/ReactToastify.min.css';
 // import AdBlockDetect from 'react-ad-block-detect';
 
@@ -382,7 +382,7 @@ class App extends Component {
         case event.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED: {
             const { youtubeVideoID, qualityFromAudio } = this.state;
             this.setState({
-                youtubeAudioURL: `https://ytdl-audio-api.majorcadevs.com/api/${youtubeVideoID}/${qualityFromAudio}/passthrough`
+                youtubeAudioURL: getPassthroughUrl(youtubeVideoID, qualityFromAudio)
             });
             break;
         }

@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import { GOOGLE_API_KEY } from './keys';
-const BASE_API_URL = "https://ytdl-audio-api.majorcadevs.com/api";
+const BASE_API_URL = "https://youtubeaudio.majorcadevs.com/api";
 
 const compatibility = (function() {
     let a = document.createElement("audio");
@@ -171,3 +171,5 @@ export const searchVideos = (query, maxResults = 10) => {
 
     return new YoutubeVideoSearch();
 };
+
+export const getPassthroughUrl = (youtubeVideoID, qualityFromAudio) => `${BASE_API_URL}/${youtubeVideoID}/${qualityFromAudio}/passthrough`;
