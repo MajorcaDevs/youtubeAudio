@@ -6,14 +6,16 @@ import { usePlayQueue } from '../hooks/play-queue';
 import '../styles/PlayQueueList/PlayQueueList.scss';
 
 
-const PlayQueueItem = ({ song, index, onRemove }) => (
+const PlayQueueDraggableItem = ({ song, index, onRemove }) => (
     <Draggable key={ `${index}-${song.id}` } draggableId={ `${index}-${song.id}` } index={ index }>
         {(provided, snapshot) => (
-            <div ref={ provided.innerRef }
+            <div
+                ref={ provided.innerRef }
                 { ...provided.draggableProps }
                 { ...provided.dragHandleProps }
                 className="row"
-                style={{ ...provided.draggableProps.style, color: snapshot.isDragging ? '#AAA' : null }}>
+                style={{ ...provided.draggableProps.style, color: snapshot.isDragging ? '#AAA' : null }}
+            >
                 <div className="col-auto reorder-icon">
                     <i className="material-icons">reorder</i>
                 </div>
@@ -26,6 +28,15 @@ const PlayQueueItem = ({ song, index, onRemove }) => (
             </div>
         )}
     </Draggable>
+);
+
+const PlayQueueInfoItem = ({ song, isFirst }) => (
+    <div className="row mb-2">
+        <div className="col">
+            {isFirst && <small>Currently listening to<br/></small>}
+            {song.title ?? '<unknown>'}
+        </div>
+    </div>
 );
 
 const PlayQueueList = ({ showing }) => {
@@ -52,10 +63,10 @@ const PlayQueueList = ({ showing }) => {
             enter={{ right: 0 }}
             leave={{ right: PlayQueueList._right }}
         >
-            {which => which && (playQueue.values.length <= 1
-                ? styles => <div id="playQueueList" style={styles}> Play Queue is Empty </div>
+            {which => which && (playQueue.values.length === 0
+                ? styles => <div id="playQueueList" style={styles} className="py-3">> Play Queue is Empty </div>
                 : styles => (
-                    <div id="playQueueList" style={{overflowY: 'scroll', ...styles}}>
+                    <div id="playQueueList" style={{overflowY: 'scroll', ...styles}} className="py-3">
                         <div>
                             <h2>Play Queue</h2>
                             <div className="col-auto edit-icon">
@@ -69,9 +80,14 @@ const PlayQueueList = ({ showing }) => {
                                 <Droppable droppableId="play-queue-list">
                                     {(provided) => (
                                         <div className="list-container" ref={provided.innerRef} {...provided.droppableProps}>
+                                            <PlayQueueInfoItem song={playQueue.values[0]} isFirst />
                                             {playQueue.values.slice(1).map((songInQueue, i) => (
-                                                <PlayQueueItem key={i} song={songInQueue} index={i}
-                                                    onRemove={playQueue.delete}/>
+                                                <PlayQueueDraggableItem
+                                                    key={songInQueue.id}
+                                                    song={songInQueue}
+                                                    index={i}
+                                                    onRemove={playQueue.delete}
+                                                />
                                             ))}
                                             {provided.placeholder}
                                             <hr/>
@@ -81,12 +97,9 @@ const PlayQueueList = ({ showing }) => {
                             </DragDropContext>
                             :
                             <div className="list-container">
-                                {playQueue.values.slice(1).map((songInQueue, i) => (
-                                    <div className="row" key={ i }>
-                                        <div className="col">
-                                            { songInQueue.title }
-                                        </div>
-                                    </div>
+                                <PlayQueueInfoItem song={playQueue.values[0]} isFirst />
+                                {playQueue.values.slice(1).map((songInQueue) => (
+                                    <PlayQueueInfoItem key={songInQueue.id} song={songInQueue} />
                                 ))}
                                 <hr/>
                             </div>
