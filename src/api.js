@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import { GOOGLE_API_KEY } from './keys';
 const BASE_API_URL = 'https://youtubeaudio.majorcadevs.com/api';
 
@@ -35,34 +34,33 @@ class ApiException {
  * @param {string} youtubeVideoID Youtube video ID (that part at the end of an URL that follows after the ?v=)
  * @returns a Promise
  */
-export const selectBestOption = (youtubeVideoID) => new Promise((resolve, reject) => {
-    $.ajax({
-        async: true,
-        type: 'GET',
-        url: `${BASE_API_URL}/${youtubeVideoID}/formats`,
-        success: (response) => {
-            response = response
-                .filter(e => compatibility.m4a && e.container === 'm4a')
-                .concat(response.filter(e => compatibility.vorbis && e.extra.startsWith('vorbis')))
-                .concat(response.filter(e => compatibility.opus && e.extra.startsWith('opus')));
-            if(response.length === 0) {
-                reject(new ApiException('No compatible sources for your browser',
-                    'We could not find any compatible sources for your browser. It seems ' +
-                       'that your browser doesn\'t support neither Opus, Vorbis nor AAC.'));
-                return;
-            }
-            response.forEach(e => {
-                let bits = e.extra.split(/[\s@k]+/g);
-                e.codec = bits[0]; e.bitrate = parseInt(bits[1], 10);
-                if (e.codec !== 'vorbis' && e.codec !== 'opus')
-                    e.codec = 'm4a';
-            });
-            response.sort(predicateBy('bps', true));
-            resolve(response[0]);
-        },
-        error: () => reject(new ApiException('Video not found', 'Check that the video URL exists or is complete.'))
+export const selectBestOption = async (youtubeVideoID) => {
+    const res = await fetch(`${BASE_API_URL}/${youtubeVideoID}/formats`);
+    if(!res.ok) {
+        throw new ApiException('Video not found', 'Check that the video URL exists or is complete.');
+    }
+
+    const formats = await res.json();
+    const supportedFormats = formats
+        .filter(e => compatibility.m4a && e.container === 'm4a')
+        .concat(formats.filter(e => compatibility.vorbis && e.extra.startsWith('vorbis')))
+        .concat(formats.filter(e => compatibility.opus && e.extra.startsWith('opus')));
+    if(supportedFormats.length === 0) {
+        throw new ApiException('No compatible sources for your browser',
+            'We could not find any compatible sources for your browser. It seems ' +
+                'that your browser doesn\'t support neither Opus, Vorbis nor AAC.');
+    }
+
+    supportedFormats.forEach(e => {
+        let bits = e.extra.split(/[\s@k]+/g);
+        e.codec = bits[0]; e.bitrate = parseInt(bits[1], 10);
+        if (e.codec !== 'vorbis' && e.codec !== 'opus')
+            e.codec = 'm4a';
     });
-});
+    supportedFormats.sort(predicateBy('bps', true));
+
+    return supportedFormats[0];
+};
 
 /**
  * Loads the audio URL (and title) of the video with the selected quality. If quality is `null` then will
@@ -71,17 +69,14 @@ export const selectBestOption = (youtubeVideoID) => new Promise((resolve, reject
  * @param {number | null} formatID A format ID returned from selectBestOption or nothing
  * @returns A Promise
  */
-export const loadAudioURL = (youtubeVideoID, formatID = null) => new Promise((resolve, reject) => {
-    $.ajax({
-        async: true,
-        type: 'GET',
-        url: formatID ? `${BASE_API_URL}/${youtubeVideoID}/${formatID}` : `${BASE_API_URL}/${youtubeVideoID}`,
-        success: (response) => {
-            resolve(response);
-        },
-        error: () => reject(new ApiException('Video not found', 'Check that the video URL exists or is complete.'))
-    });
-});
+export const loadAudioURL = async (youtubeVideoID, formatID = null) => {
+    const res = await fetch(formatID ? `${BASE_API_URL}/${youtubeVideoID}/${formatID}` : `${BASE_API_URL}/${youtubeVideoID}`);
+    if(!res.ok) {
+        throw new ApiException('Video not found', 'Check that the video URL exists or is complete.');
+    }
+
+    return res.json();
+};
 
 /**
  * Loads a full playlist into a list of `{ id: ..., title: ... }` objects. async/await compatible.
@@ -89,27 +84,27 @@ export const loadAudioURL = (youtubeVideoID, formatID = null) => new Promise((re
  * @param {string | null} nextId Used internally, don't set any value
  * @returns A Promise
  */
-export const addYoutubePlaylist = (youtubePlaylistID, nextId = null) => new Promise((resolve, reject) => {
+export const addYoutubePlaylist = async (youtubePlaylistID, nextId = null) => {
     let url = `https://www.googleapis.com/youtube/v3/playlistItems?part=id,snippet&maxResults=50&playlistId=${youtubePlaylistID}&key=${GOOGLE_API_KEY}`;
     if(nextId) url += `&pageToken=${nextId}`;
-    $.ajax({
-        url,
-        async: true,
-        type: 'GET',
-        success: response => {
-            const items = response.items.map(item => ({ id: item.snippet.resourceId.videoId, title: item.snippet.title }));
-            if(response.nextPageToken) {
-                addYoutubePlaylist(youtubePlaylistID, response.nextPageToken)
-                    .then(moreItems => resolve([ ...items, ...moreItems ]))
-                    .catch(reject);
-            } else {
-                resolve(items);
-            }
-        },
-        error: () => reject(new ApiException('Cannot load videos from playlist',
-            'Something bad has happened while we were asking to YouTube for the videos in that playlist :('))
-    });
-});
+
+    const res = await fetch(url);
+    if(!res.ok) {
+        throw new ApiException(
+            'Cannot load videos from playlist',
+            'Something bad has happened while we were asking to YouTube for the videos in that playlist :(',
+        );
+    }
+
+    const response = await res.json();
+    const items = response.items.map(item => ({ id: item.snippet.resourceId.videoId, title: item.snippet.title }));
+    if(response.nextPageToken) {
+        const moreItems = await addYoutubePlaylist(youtubePlaylistID, response.nextPageToken);
+        return [...items, ...moreItems];
+    } else {
+        return items;
+    }
+};
 
 /**
  * Prepares a Youtube Video Search with the query and returns a class with getNextPage() and hasEnded.
@@ -127,33 +122,31 @@ export const searchVideos = (query, maxResults = 10) => {
             this.total = NaN;
         }
 
-        getNextPage() {
+        async getNextPage() {
             if(this.hasEnded) {
-                return Promise.reject(new Error('End of the list'));
+                throw new Error('End of the list');
             }
 
-            return new Promise((resolve, reject) => {
-                let url = this.url;
-                if(this.nextPageToken) {
-                    url += `&pageToken=${this.nextPageToken}`;
-                }
+            let url = this.url;
+            if(this.nextPageToken) {
+                url += `&pageToken=${this.nextPageToken}`;
+            }
 
-                $.ajax({
-                    url,
-                    async: true,
-                    type: 'GET',
-                    success: response => {
-                        if(response.nextPageToken) {
-                            this.nextPageToken = response.nextPageToken;
-                        }
-                        this.totalListed += response.items.length;
-                        this.total = response.pageInfo.totalResults;
-                        resolve(response.items);
-                    },
-                    error: () => reject(new ApiException('Cannot search for videos',
-                        'Something bad has happened while we were asking to YouTube for videos :('))
-                });
-            });
+            const res = await fetch(url);
+            if(!res.ok) {
+                throw new ApiException(
+                    'Cannot search for videos',
+                    'Something bad has happened while we were asking to YouTube for videos :(',
+                );
+            }
+
+            const response = await res.json();
+            if(response.nextPageToken) {
+                this.nextPageToken = response.nextPageToken;
+            }
+            this.totalListed += response.items.length;
+            this.total = response.pageInfo.totalResults;
+            return response.items;
         }
 
         get hasEnded() {
