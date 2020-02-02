@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Transition } from 'react-spring';
+import { Transition } from 'react-spring/renderprops';
 import { Draggable, Droppable, DragDropContext } from 'react-beautiful-dnd';
-import './styles/PlayQueueList/PlayQueueList.css';
+import '../styles/PlayQueueList/PlayQueueList.scss';
 
 
 const PlayQueueItem = ({ song, index, onRemove }) => (
     <Draggable key={ `${index}-${song.id}` } draggableId={ `${index}-${song.id}` } index={ index }>
         {(provided, snapshot) => (
             <div ref={ provided.innerRef }
-                 { ...provided.draggableProps }
-                 { ...provided.dragHandleProps }
+                { ...provided.draggableProps }
+                { ...provided.dragHandleProps }
                 className="row"
                 style={{ ...provided.draggableProps.style, color: snapshot.isDragging ? '#AAA' : null }}>
                 <div className="col-auto reorder-icon">
@@ -70,7 +70,7 @@ export default class PlayQueueList extends Component{
                                         <div className="list-container" ref={provided.innerRef}>
                                             {[...this.props.playQueue.values].splice(1).map((songInQueue, i) => (
                                                 <PlayQueueItem key={i} song={songInQueue} index={i}
-                                                               onRemove={this.props.onPlaylistItemRemove}/>
+                                                    onRemove={this.props.onPlaylistItemRemove}/>
                                             ))
                                             }
                                             <hr/>
@@ -97,11 +97,52 @@ export default class PlayQueueList extends Component{
 
         return (
             <Transition
-                keys={element.map(() => 'queue')}
+                items={showing}
                 from={{ right: PlayQueueList._right }}
                 enter={{ right: 0 }}
-                leave={{ right: PlayQueueList._right }}>
-                    { element }
+                leave={{ right: PlayQueueList._right }}
+            >
+                {which => which && (playQueue.values.length <= 1
+                    ? styles => <div id="playQueueList" style={styles}> Play Queue is Empty </div>
+                    : styles => (
+                        <div id="playQueueList" style={{overflowY: 'scroll', ...styles}}>
+                            <div>
+                                <h2>Play Queue</h2>
+                                <div className="col-auto edit-icon">
+                                    <button className={`btn btn-sm edit-button ${edit ? 'active' : ''}`} onClick={ this.changeEditMode }>
+                                        <i className="material-icons">edit</i>
+                                    </button>
+                                </div>
+                            </div>
+                            {edit ?
+                                <DragDropContext onDragEnd={this.reordered}>
+                                    <Droppable droppableId="play-queue-list">
+                                        {(provided) => (
+                                            <div className="list-container" ref={provided.innerRef}>
+                                                {[...this.props.playQueue.values].splice(1).map((songInQueue, i) => (
+                                                    <PlayQueueItem key={i} song={songInQueue} index={i}
+                                                        onRemove={this.props.onPlaylistItemRemove}/>
+                                                ))
+                                                }
+                                                <hr/>
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
+                                :
+                                <div className="list-container">
+                                    {[...this.props.playQueue.values].splice(1).map((songInQueue, i) => (
+                                        <div className="row" key={ i }>
+                                            <div className="col">
+                                                { songInQueue.title }
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <hr/>
+                                </div>
+                            }
+                        </div>
+                    ))}
             </Transition>
         );
     }

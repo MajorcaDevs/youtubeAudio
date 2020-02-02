@@ -98,7 +98,8 @@ export default class PlayQueue {
     _store() {
         try {
             window.sessionStorage.setItem('playQueue', JSON.stringify(this._array));
-        } catch(e) {}
+        // eslint-disable-next-line no-empty
+        } catch {}
     }
 
     /**

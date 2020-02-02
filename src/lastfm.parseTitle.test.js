@@ -31,9 +31,9 @@ const testValues = [
     'Intr0beatz - Trees Breez',
     'Afro Medusa - Pasilda - Knee Deep Remix',
     'Noisia Radio S04E01',
-    "Qubiko & K-909 'These Days'",
+    'Qubiko & K-909 \'These Days\'',
     'Dario D\'Attis & Definition featuring Jinadu ‘Dreamcatcher’',
-    "Dario D'Attis & Sven Tasnadi 'I Need'",
+    'Dario D\'Attis & Sven Tasnadi \'I Need\'',
 ];
 
 const testExpectedValues = [
@@ -75,7 +75,7 @@ const testExpectedValues = [
 export const doTest = () => {
     let passedTests = 0;
     console.info('%cPassing tests for: %cparseTitle', 'color: rgb(180, 170, 10)',
-                 'font-family: monospace; color: rgb(180, 170, 10)');
+        'font-family: monospace; color: rgb(180, 170, 10)');
     for(let i = 0; i < testValues.length; i++) {
         const value = testValues[i];
         const expected = testExpectedValues[i];
@@ -85,7 +85,7 @@ export const doTest = () => {
             if(current === null && expected !== null) {
                 ok = false;
                 console.warn(` - ${value}: %c✗`, 'color: rgb(230, 20, 40)');
-                console.warn(`    Current value null`);
+                console.warn('    Current value null');
                 console.warn(`    Expected value "${JSON.stringify(expected)}"`);
             } else {
                 if(current.title !== expected.title) {
@@ -107,4 +107,4 @@ export const doTest = () => {
         }
     }
     console.info(`%cPassed ${passedTests} of ${testValues.length}`, 'color: rgb(180, 170, 10)');
-}
+};
