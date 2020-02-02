@@ -482,13 +482,13 @@ class App extends Component {
                                 <div className="btn-group mt-3">
                                     <Button
                                         name="Play Song" value="Play Now!" onClick={ this.playSong }
-                                        disabled={(loading || invalidURL || youtubeVideoURL.length === 0) && playQueue.values.length < 1}/>
+                                        disabled={(loading || invalidURL || youtubeVideoURL.length === 0) && playQueue.values.length === 0}/>
                                     <Button
                                         name="Add to Queue" value="Enqueue" onClick={ this.addToQueue }
                                         disabled={loading || invalidURL || youtubeVideoURL.length === 0}/>
                                     <Button
                                         name="Clear queueue" value="Clear Queue" onClick={ this.clear }
-                                        disabled={loading || playQueue.values.length < 2}/>
+                                        disabled={loading || playQueue.values.length === 0}/>
                                     <Button
                                         name="Next song" value="Next Song" onClick={ this.nextSong }
                                         disabled={loading || playQueue.values.length < 2}/>

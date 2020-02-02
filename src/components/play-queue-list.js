@@ -64,7 +64,7 @@ const PlayQueueList = ({ showing }) => {
             leave={{ right: PlayQueueList._right }}
         >
             {which => which && (playQueue.values.length === 0
-                ? styles => <div id="playQueueList" style={styles} className="py-3">> Play Queue is Empty </div>
+                ? styles => <div id="playQueueList" style={styles} className="py-3"><h2>Play Queue is Empty</h2></div>
                 : styles => (
                     <div id="playQueueList" style={{overflowY: 'scroll', ...styles}} className="py-3">
                         <div>
