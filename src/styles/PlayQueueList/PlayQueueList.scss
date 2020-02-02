@@ -32,6 +32,10 @@
         background-color: #181818;
     }
 
+    > h2 {
+        user-select: none;
+    }
+
     .edit-icon {
         position: absolute;
         top: 5px;
