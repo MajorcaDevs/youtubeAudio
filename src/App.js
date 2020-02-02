@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import $ from 'jquery';
 import { ToastContainer, toast } from 'react-toastify';
 import bowser from 'bowser';
 
@@ -20,15 +19,13 @@ import { selectBestOption, loadAudioURL, addYoutubePlaylist, getPassthroughUrl }
 
 import './styles/vendors.scss';
 import './styles/App/App.scss';
-// import AdBlockDetect from 'react-ad-block-detect';
 
-//TODO Averigüar como arreglarlo ahora, parece que hay que usar CSS
-/*style({
-    TOP_RIGHT: {
-        top: '80px',
-        right: '1em'
-    }
-});*/
+const changeTitle = (() => {
+    const title = document.head.querySelector('title');
+    return (newTitle) => {
+        title.innerText = newTitle;
+    };
+})();
 
 class App extends Component {
     constructor (props) {
@@ -152,7 +149,7 @@ class App extends Component {
             });
 
             const { url, title } = await loadAudioURL(youtubeVideoID, id);
-            if(!this.props.playQueue[0].title && this.props.playQueue[0].id === youtubeVideoID) {
+            if(!this.props.playQueue.values[0]?.title && this.props.playQueue.values[0]?.id === youtubeVideoID) {
                 this.props.playQueue.update(0, {
                     ...this.props.playQueue.values[0],
                     title,
@@ -164,7 +161,7 @@ class App extends Component {
                 loading: false,
                 scrobblingState: 'none'
             }, () => {
-                $('title').text(`${this.state.youtubeVideoTitle} - YouTube Audio`);
+                changeTitle(`${this.state.youtubeVideoTitle} - YouTube Audio`);
                 if(autoplay) {
                     this.audioRef.current.oncanplay = async () => {
                         try {
@@ -244,7 +241,7 @@ class App extends Component {
         this.setState(newState);
         if(!this.state.youtubeAudioURL) {
             //If it is not playing anything, then we can safely change that
-            $('title').text('YouTube Audio');
+            changeTitle('YouTube Audio');
         }
     }
 
@@ -315,7 +312,7 @@ class App extends Component {
         const currentTime = this.audioRef.current.currentTime;
         let duration = this.audioRef.current.duration;
         let time = this.formatTime(currentTime);
-        $('title').text(`${this.state.isPlaying ? '▶' : '▮▮'} ${time} - ${this.state.youtubeVideoTitle} - YouTube Audio`);
+        changeTitle(`${this.state.isPlaying ? '▶' : '▮▮'} ${time} - ${this.state.youtubeVideoTitle} - YouTube Audio`);
 
         if(bowser.safari) {
             //Workaround for Safari m4a playing bug
@@ -448,7 +445,7 @@ class App extends Component {
         }
 
         if(prevState.isPlaying !== this.state.isPlaying){
-            $('title').text(
+            changeTitle(
                 `${this.state.isPlaying ? '▶' : '▮▮'}
                 ${this.formatTime(this.audioRef.current.currentTime)} - ${this.state.youtubeVideoTitle} - YouTube Audio`
             );
@@ -541,6 +538,7 @@ class LoadingToastController {
     }
 
     error(title, content) {
+        console.trace(title, content);
         toast.update(this._toast, {
             render: <NotifContent title='Video not found' light={true}
                 text='Check that the video URL exists or is complete.' />,
