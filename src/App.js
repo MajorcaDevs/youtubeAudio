@@ -486,7 +486,8 @@ class App extends Component {
         return (
             <div id="AppContainer">
                 <NightModeProvider>
-                    <Header nightMode={ nightMode } nightModeListener={ this.nightModeListener } lastfm={ this.lastfm } />
+                    <Header lastfm={ this.lastfm } />
+
                     <div className="container-fluid">
                         <ToastContainer pauseOnHover={ false } />
                         <p className="greyText" id="greyText">

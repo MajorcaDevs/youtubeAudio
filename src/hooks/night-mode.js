@@ -13,6 +13,13 @@ export const NightModeProvider = ({ children }) => {
 
     useEffect(() => {
         localStorage.setItem('youtube-audio:nightMode', nightMode.toString());
+        if(nightMode) {
+            document.body.classList.add('AppDark');
+            document.body.classList.remove('AppLight');
+        } else {
+            document.body.classList.remove('AppDark');
+            document.body.classList.add('AppLight');
+        }
     }, [nightMode]);
 
     return <Context.Provider value={{ nightMode, setNightMode }}>{children}</Context.Provider>;
