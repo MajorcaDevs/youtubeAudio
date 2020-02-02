@@ -1,18 +1,26 @@
 import React, { Component } from 'react';
 import $ from 'jquery';
 import { ToastContainer, toast } from 'react-toastify';
-import { Spring } from 'react-spring';
 import bowser from 'bowser';
-import 'bootstrap/dist/css/bootstrap.css';
-import 'material-design-icons/iconfont/material-icons.css';
-import './styles/App/App.css';
-import github from './github.svg';
+
+import {
+    Button,
+    Footer,
+    Header,
+    LoadingSpinner,
+    NowPlayingText,
+    PlayQueueList,
+    PlayQueueListButton,
+    SearchButton,
+    SearchPanel,
+} from './components';
+import { NightModeProvider } from './hooks/night-mode';
 import PlayQueue from './PlayQueue';
-import PlayQueueList from './PlayQueueList';
-import SearchPanel from './SearchPanel';
 import { Lastfm, parseTitle } from './LastFM';
 import { selectBestOption, loadAudioURL, addYoutubePlaylist, getPassthroughUrl } from './api';
-import 'react-toastify/dist/ReactToastify.min.css';
+
+import './styles/vendors.scss';
+import './styles/App/App.scss';
 // import AdBlockDetect from 'react-ad-block-detect';
 
 //TODO Averigüar como arreglarlo ahora, parece que hay que usar CSS
@@ -27,18 +35,18 @@ class App extends Component {
     constructor (props) {
         super(props);
         this.state = ({
-            youtubeVideoURL: "",
+            youtubeVideoURL: '',
             qualityFromAudio: 0,
             invalidURL: false,
-            youtubeAudioURL: "",
-            youtubeVideoTitle: "",
+            youtubeAudioURL: '',
+            youtubeVideoTitle: '',
             loading: false,
             nightMode: true,
-            currentFormat: "",
-            youtubeVideoID: "",
+            currentFormat: '',
+            youtubeVideoID: '',
             showingQueue: false,
             showingSearch: false,
-            youtubePlaylistID: "",
+            youtubePlaylistID: '',
             playQueue: new PlayQueue(),
             isPlaying: false,
             scrobblingState: 'none', // 'none', 'nowPlaying', 'scrobbled'
@@ -67,7 +75,7 @@ class App extends Component {
         this.clear = this.clear.bind(this);
     }
 
-    _testYoutubeVideoURL = "https://www.youtube.com/watch?v=bM7SZ5SBzyY";
+    _testYoutubeVideoURL = 'https://www.youtube.com/watch?v=bM7SZ5SBzyY';
 
     clear(){
         this.setState({playQueue: this.state.playQueue.emptyQueue()});
@@ -89,7 +97,7 @@ class App extends Component {
                         this.loadSong(this.state.playQueue.values[0].id);
                         this.loadingToast.dismiss();
                     } else {
-                        this.loadingToast.success('Enqueued', `"${title}" was added to the queue`)
+                        this.loadingToast.success('Enqueued', `"${title}" was added to the queue`);
                     }
                 });
             } catch(e) {
@@ -157,7 +165,7 @@ class App extends Component {
                 loading: false,
                 scrobblingState: 'none'
             }, () => {
-                $("title").text(`${this.state.youtubeVideoTitle} - YouTube Audio`);
+                $('title').text(`${this.state.youtubeVideoTitle} - YouTube Audio`);
                 if(autoplay) {
                     this.audioRef.current.oncanplay = async () => {
                         try {
@@ -167,7 +175,7 @@ class App extends Component {
                             toast.update(this.loadingToast._toast, {
                                 type: toast.TYPE.INFO,
                                 render: <NotifContent title='Press play manually' light={false}
-                                              text={'Due to your browser configuration, we cannot press play for you.' +
+                                    text={'Due to your browser configuration, we cannot press play for you.' +
                                                     ' You can change your autoplay options in the browser\'s configuration.'} />,
                                 closeButton: null,
                                 closeOnClick: true,
@@ -182,7 +190,7 @@ class App extends Component {
                 }
             });
         } catch(e) {
-            this.setState({ loading: false, youtubeAudioURL: "", youtubeVideoTitle: "" });
+            this.setState({ loading: false, youtubeAudioURL: '', youtubeVideoTitle: '' });
             this.loadingToast.error(e.message, e.descriptiveMessage);
             this.loadingToast = null;
         }
@@ -237,7 +245,7 @@ class App extends Component {
         this.setState(newState);
         if(!this.state.youtubeAudioURL) {
             //If it is not playing anything, then we can safely change that
-            $("title").text("YouTube Audio");
+            $('title').text('YouTube Audio');
         }
     }
 
@@ -313,7 +321,7 @@ class App extends Component {
         const currentTime = this.audioRef.current.currentTime;
         let duration = this.audioRef.current.duration;
         let time = this.formatTime(currentTime);
-        $("title").text(`${this.state.isPlaying ? "▶" : "▮▮"} ${time} - ${this.state.youtubeVideoTitle} - YouTube Audio`);
+        $('title').text(`${this.state.isPlaying ? '▶' : '▮▮'} ${time} - ${this.state.youtubeVideoTitle} - YouTube Audio`);
 
         if(bowser.safari) {
             //Workaround for Safari m4a playing bug
@@ -374,8 +382,8 @@ class App extends Component {
         switch(event.target.error.code) {
         case event.target.error.MEDIA_ERR_NETWORK:
             toast.error(<NotifContent title='There was a network error'
-                                      text='Could not load the song. Check your internet connection.' />,
-                        { autoClose: false }
+                text='Could not load the song. Check your internet connection.' />,
+            { autoClose: false }
             );
             break;
 
@@ -427,7 +435,7 @@ class App extends Component {
     }
 
     onWindowKeyUp(event) {
-        if(event.code === 'Space' && event.target.getAttribute('id') !== "videoURL") {
+        if(event.code === 'Space' && event.target.getAttribute('id') !== 'videoURL') {
             if(this.audioRef.current) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -449,7 +457,7 @@ class App extends Component {
             toast.info(<p>We've change the location to
                 <a href="https://youtubeAudio.majorcadevs.com">https://youtubeAudio.majorcadevs.com</a>.
                 <small>We'll redirect you to the new location when this notification is closed :)</small>
-            </p>, { onClose: () => window.location.assign('https://youtubeAudio.majorcadevs.com'), autoClose: 10000 })
+            </p>, { onClose: () => window.location.assign('https://youtubeAudio.majorcadevs.com'), autoClose: 10000 });
         }
     }
 
@@ -459,8 +467,8 @@ class App extends Component {
         }
 
         if(prevState.isPlaying !== this.state.isPlaying){
-            $("title").text(
-                `${this.state.isPlaying ? "▶" : "▮▮"}
+            $('title').text(
+                `${this.state.isPlaying ? '▶' : '▮▮'}
                 ${this.formatTime(this.audioRef.current.currentTime)} - ${this.state.youtubeVideoTitle} - YouTube Audio`
             );
         }
@@ -477,168 +485,82 @@ class App extends Component {
             showingQueue, currentFormat, playQueue, showingSearch } = this.state;
         return (
             <div id="AppContainer">
-                <Header nightMode={ nightMode } nightModeListener={ this.nightModeListener } lastfm={ this.lastfm } />
-                <div className="container-fluid">
-                    <ToastContainer pauseOnHover={ false } />
-                    <p className="greyText" id="greyText">
-                        Enjoy the audio from the youtube videos!
-                    </p>
-                    <div className="d-flex row justify-content-center align-items-center" id="audioQuery">
-                        <div className="col-md-6 col-sm-12">
-                        {/*
-                        ----
-                        Disabled until bug confirm
-                        ----
-                        <AdBlockDetect>
-                        <div className="alert alert-danger" role="alert">
-                          Please, consider disabling Ad-Block in order to make the website work properly
-                        </div>
-                        </AdBlockDetect>
-                        */}
-                            <div className="input-group" id="input">
-                                <div className="input-group-prepend">
-                                    <Button nightMode={ nightMode }
-                                           id="test" name="test" value="TEST" onClick={ this.listenerTestButton }
-                                           disabled={loading}/>
-                                </div>
-                                <input type="text" className={`form-control ${invalidURL ? 'is-invalid' : ''}`}
-                                       id="videoURL" name="videoURL" onChange={ this.listenerForm }
-                                       value={ youtubeVideoURL } placeholder="insert here your youtube video url..."
-                                       disabled={loading}/>
+                <NightModeProvider>
+                    <Header nightMode={ nightMode } nightModeListener={ this.nightModeListener } lastfm={ this.lastfm } />
+                    <div className="container-fluid">
+                        <ToastContainer pauseOnHover={ false } />
+                        <p className="greyText" id="greyText">
+                            Enjoy the audio from the youtube videos!
+                        </p>
+                        <div className="d-flex row justify-content-center align-items-center" id="audioQuery">
+                            <div className="col-md-6 col-sm-12">
+                                {/*
+                            ----
+                            Disabled until bug confirm
+                            ----
+                            <AdBlockDetect>
+                            <div className="alert alert-danger" role="alert">
+                            Please, consider disabling Ad-Block in order to make the website work properly
                             </div>
-                            <div className="row justify-content-center">
-                                <div className="btn-group mt-3">
-                                    <Button nightMode={ nightMode }
+                            </AdBlockDetect>
+                            */}
+                                <div className="input-group" id="input">
+                                    <div className="input-group-prepend">
+                                        <Button
+                                            id="test" name="test" value="TEST" onClick={ this.listenerTestButton }
+                                            disabled={loading}/>
+                                    </div>
+                                    <input type="text" className={`form-control ${invalidURL ? 'is-invalid' : ''}`}
+                                        id="videoURL" name="videoURL" onChange={ this.listenerForm }
+                                        value={ youtubeVideoURL } placeholder="insert here your youtube video url..."
+                                        disabled={loading}/>
+                                </div>
+                                <div className="row justify-content-center">
+                                    <div className="btn-group mt-3">
+                                        <Button
                                             name="Play Song" value="Play Now!" onClick={ this.playSong }
                                             disabled={(loading || invalidURL || youtubeVideoURL.length === 0) && playQueue.values.length < 1}/>
-                                    <Button nightMode={ nightMode }
+                                        <Button
                                             name="Add to Queue" value="Enqueue" onClick={ this.addToQueue }
                                             disabled={loading || invalidURL || youtubeVideoURL.length === 0}/>
-                                    <Button nightMode={ nightMode }
+                                        <Button
                                             name="Clear queueue" value="Clear Queue" onClick={ this.clear }
                                             disabled={loading || playQueue.values.length < 2}/>
-                                    <Button nightMode={ nightMode }
+                                        <Button
                                             name="Next song" value="Next Song" onClick={ this.nextSong }
                                             disabled={loading || playQueue.values.length < 2}/>
+                                    </div>
                                 </div>
+                                <NowPlayingText title={youtubeVideoTitle} currentFormat={currentFormat} />
+                                { this.state.youtubeAudioURL ?
+                                    <audio id="player" className="player" controls src={ youtubeAudioURL } onError={ this.onSongError }
+                                        onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd }
+                                        onPlay={this.onPlay} onPause={this.onPause} /> : null
+                                }
                             </div>
-                            <NowPlayingText title={youtubeVideoTitle} currentFormat={currentFormat} />
-                            { this.state.youtubeAudioURL ?
-                                <audio id="player" className="player" controls src={ youtubeAudioURL } onError={ this.onSongError }
-                                       onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd }
-                                       onPlay={this.onPlay} onPause={this.onPause} /> : null
-                            }
                         </div>
+                        <PlayQueueList showing={ showingQueue }
+                            playQueue={ this.state.playQueue }
+                            onPlaylistItemReorder={ this.onPlaylistItemReorder }
+                            onPlaylistItemRemove={ this.onPlaylistItemRemove } />
+                        <SearchPanel showing={ showingSearch } onPlayClicked={ this.playFromSeach } onEnqueueClicked={ this.enqueueFromSeach } />
+                        <PlayQueueListButton onClick={ this.showQueue } showingQueue={ showingQueue } nightMode={ nightMode } left={ showingQueue || showingSearch } />
+                        <SearchButton onClick={ this.showSearch } showingSearch={ showingSearch } nightMode={ nightMode } left={ showingQueue || showingSearch } />
                     </div>
-                    <PlayQueueList showing={ showingQueue }
-                                   playQueue={ this.state.playQueue }
-                                   onPlaylistItemReorder={ this.onPlaylistItemReorder }
-                                   onPlaylistItemRemove={ this.onPlaylistItemRemove } />
-                    <SearchPanel showing={ showingSearch } onPlayClicked={ this.playFromSeach } onEnqueueClicked={ this.enqueueFromSeach } />
-                    <PlayQueueListButton onClick={ this.showQueue } showingQueue={ showingQueue } nightMode={ nightMode } left={ showingQueue || showingSearch } />
-                    <SearchButton onClick={ this.showSearch } showingSearch={ showingSearch } nightMode={ nightMode } left={ showingQueue || showingSearch } />
-                </div>
 
-                <Footer />
+                    <Footer />
+                </NightModeProvider>
             </div>
         );
     }
 }
 
-//Decorador que permite que un componente se muestre o no cuando
-//una propiedad (`prop') existe.
-const ShowIf = (name, func) => {
-    return props => {
-        if(props[name]) {
-            return func(props);
-        } else {
-            return null;
-        }
-    }
-};
-
-const Button = props => {
-    let lprops = {...props};
-    delete lprops.nightMode;
-    return <input type="button" className={`btn btn-outline-${ props.nightMode ? 'light' : 'dark' }`} {...lprops} />;
-};
-
-const LoadingSpinner = () => (
-    <div className="row justify-content-center">
-        <div className="title loading" id="stateText">
-            Loading...
-        </div>
-        <div className="loader"/>
-    </div>
-);
-
-const NowPlayingText = ShowIf('title', ({ title, currentFormat }) => (
-    <div className="title" id="stateText">
-        <div id="NowPlaying">
-            Now Playing: ({ currentFormat })
-        </div>
-        <div id="title" className="text-center"> { title } </div>
-    </div>
-));
-
-const Header = ({ nightMode, nightModeListener, lastfm }) => (
-    <header className="AppHeader" id="AppHeader">
-        <h1 className="App-title">YouTube Audio Player</h1>
-        <button className="btn btn-sm btn-outline-light float-right onoffmode" id="changeSkinButton" onClick={ nightModeListener }>
-            { !nightMode ? <i className="material-icons">brightness_2</i> : <i className="material-icons">wb_sunny</i>}
-        </button>
-        <button className="btn btn-sm btn-outline-light float-right lastfm" onClick={ () => !lastfm.hasLoggedIn ? lastfm.startAuthentication() : lastfm.deauthenticate() }>
-            <img src="https://www.last.fm/static/images/footer_logo@2x.49ca51948b0a.png" width={ 24 } alt={ lastfm.username } />
-            { lastfm.hasLoggedIn && <i className="material-icons"
-                                       style={{ position: 'absolute', top: 0, left: 0, fontSize: 34, marginLeft: 1, color: 'rgb(255, 180, 180)' }}>close</i>}
-        </button>
-    </header>
-);
-
-const Footer = () => (
-    <footer className="AppFooter footer align-items-center" id="AppFooter">
-        <div id="FooterContent">
-            <a href="https://github.com/MajorcaDevs/youtubeAudio" target="_blank" rel="noopener noreferrer">
-                <img alt="GitHub" src={github} id="githubLogo" className="mr-1" />
-                &nbsp;Made by <b>MajorcaDevs</b> with <b>{"<3"}</b>
-            </a>
-        </div>
-    </footer>
-);
 
 const NotifContent = ({ title, text, light }) => (
     <div>
         <p className="lead">{ title }</p>
-        <p className={light ? "text-light" : "text-muted"}><small>{ text }</small></p>
+        <p className={light ? 'text-light' : 'text-muted'}><small>{ text }</small></p>
     </div>
-);
-
-const PlayQueueListButton = ({ showingQueue, nightMode, onClick, left }) => (
-    <Spring from={{ right: 15 }}
-            to={{ right: left ? Math.min(-PlayQueueList._right + 15, document.body.clientWidth - 45) : 15 }}>
-        { styles =>
-            <button id="playQueue"
-                    style={ styles }
-                    className={`btn ${showingQueue ? 'right' : 'left'} btn-outline-${ nightMode ? 'light' : 'dark' }`}
-                    onClick={ onClick }>
-                <div id="arrow" className={`${showingQueue ? 'right' : 'left'}`}/>
-            </button>
-        }
-    </Spring>
-);
-
-const SearchButton = ({ showingSearch, nightMode, onClick, left }) => (
-    <Spring from={{ right: 15 }}
-            to={{ right: left ? Math.min(-SearchPanel._right + 15, document.body.clientWidth - 45) : 15 }}>
-        { styles =>
-            <button id="searchPanelButton"
-                    style={ styles }
-                    className={`btn ${showingSearch ? 'right' : 'left'} btn-outline-${ nightMode ? 'light' : 'dark' }`}
-                    onClick={ onClick }>
-                <i className="material-icons">search</i>
-            </button>
-        }
-    </Spring>
 );
 
 class LoadingToastController {
@@ -659,7 +581,7 @@ class LoadingToastController {
     error(title, content) {
         toast.update(this._toast, {
             render: <NotifContent title='Video not found' light={true}
-                                  text='Check that the video URL exists or is complete.' />,
+                text='Check that the video URL exists or is complete.' />,
             type: toast.TYPE.ERROR,
             closeButton: null,
             closeOnClick: true,

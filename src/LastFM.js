@@ -7,20 +7,20 @@ Map.prototype.map = function map(func) {
     let mapped = [];
     this.forEach((value, key) => mapped.push(func(value, key)));
     return mapped;
-}
+};
 
 Map.prototype.sort = function sort(func) {
     return new Map([...this.entries()].sort((a, b) => func({ key: a[0], value: a[1] }, { key: b[0], value: b[1] })));
-}
+};
 
 export const parseTitle = (text) => {
     text = text.replace(/(?:official )?(?:lyric )?(?:video|audio)/gi, '')
-               .replace(/[ ([]?hq[)\] ]?/gi, '[-]')
-               .replace(/[ ([]?hd[)\] ]?/gi, '[-]')
-               .replace(/[AB] ?\d/, '')
-               .replace(/\( *\)/g, '')
-               .replace(/\[ *\]/g, '')
-               .trim();
+        .replace(/[ ([]?hq[)\] ]?/gi, '[-]')
+        .replace(/[ ([]?hd[)\] ]?/gi, '[-]')
+        .replace(/[AB] ?\d/, '')
+        .replace(/\( *\)/g, '')
+        .replace(/\[ *\]/g, '')
+        .trim();
     const isChunguillo = /.+ - .+ - .+/.exec(text) !== null;
     const parts = /([a-záéíóúàèìòùäëïöüâêîôûç_0-9&./',\- ]+) - ([a-záéíóúàèìòùäëïöüâêîôûç_0-9&./',\- ()]+)/i.exec(text);
     if(parts !== null && !isChunguillo) {
@@ -51,7 +51,7 @@ export class Lastfm {
     _disableScrobblings = false;
 
     constructor() {
-        let query = window.location.search.substr(1).split("&").map(e => e.split("=")).reduce((x, e) => {
+        let query = window.location.search.substr(1).split('&').map(e => e.split('=')).reduce((x, e) => {
             x[e[0]] = e[1];
             return x;
         }, {});

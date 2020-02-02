@@ -1,13 +1,13 @@
 import $ from 'jquery';
 import { GOOGLE_API_KEY } from './keys';
-const BASE_API_URL = "https://youtubeaudio.majorcadevs.com/api";
+const BASE_API_URL = 'https://youtubeaudio.majorcadevs.com/api';
 
 const compatibility = (function() {
-    let a = document.createElement("audio");
+    let a = document.createElement('audio');
     return {
-        opus: ((a.canPlayType("audio/webm; codecs=opus")) !== ""),
-        vorbis: ((a.canPlayType("audio/webm; codecs=vorbis")) !== ""),
-        m4a: ((a.canPlayType("audio/x-m4a; codecs=mp4a.40.2")) !== "")
+        opus: ((a.canPlayType('audio/webm; codecs=opus')) !== ''),
+        vorbis: ((a.canPlayType('audio/webm; codecs=vorbis')) !== ''),
+        m4a: ((a.canPlayType('audio/x-m4a; codecs=mp4a.40.2')) !== '')
     };
 })();
 
@@ -18,9 +18,9 @@ const predicateBy = (prop, desc) => {
         else if(a[prop] < b[prop])
             return desc ? 1 : -1;
         else
-             return 0;
-    }
-}
+            return 0;
+    };
+};
 
 class ApiException {
     constructor(a, b) {
@@ -38,7 +38,7 @@ class ApiException {
 export const selectBestOption = (youtubeVideoID) => new Promise((resolve, reject) => {
     $.ajax({
         async: true,
-        type: "GET",
+        type: 'GET',
         url: `${BASE_API_URL}/${youtubeVideoID}/formats`,
         success: (response) => {
             response = response
@@ -47,17 +47,17 @@ export const selectBestOption = (youtubeVideoID) => new Promise((resolve, reject
                 .concat(response.filter(e => compatibility.opus && e.extra.startsWith('opus')));
             if(response.length === 0) {
                 reject(new ApiException('No compatible sources for your browser',
-                       'We could not find any compatible sources for your browser. It seems ' +
+                    'We could not find any compatible sources for your browser. It seems ' +
                        'that your browser doesn\'t support neither Opus, Vorbis nor AAC.'));
                 return;
             }
             response.forEach(e => {
                 let bits = e.extra.split(/[\s@k]+/g);
                 e.codec = bits[0]; e.bitrate = parseInt(bits[1], 10);
-                if (e.codec !== "vorbis" && e.codec !== "opus")
-                    e.codec = "m4a";
+                if (e.codec !== 'vorbis' && e.codec !== 'opus')
+                    e.codec = 'm4a';
             });
-            response.sort(predicateBy("bps", true));
+            response.sort(predicateBy('bps', true));
             resolve(response[0]);
         },
         error: () => reject(new ApiException('Video not found', 'Check that the video URL exists or is complete.'))
@@ -74,7 +74,7 @@ export const selectBestOption = (youtubeVideoID) => new Promise((resolve, reject
 export const loadAudioURL = (youtubeVideoID, formatID = null) => new Promise((resolve, reject) => {
     $.ajax({
         async: true,
-        type: "GET",
+        type: 'GET',
         url: formatID ? `${BASE_API_URL}/${youtubeVideoID}/${formatID}` : `${BASE_API_URL}/${youtubeVideoID}`,
         success: (response) => {
             resolve(response);
@@ -107,7 +107,7 @@ export const addYoutubePlaylist = (youtubePlaylistID, nextId = null) => new Prom
             }
         },
         error: () => reject(new ApiException('Cannot load videos from playlist',
-                                             'Something bad has happened while we were asking to YouTube for the videos in that playlist :('))
+            'Something bad has happened while we were asking to YouTube for the videos in that playlist :('))
     });
 });
 
@@ -129,7 +129,7 @@ export const searchVideos = (query, maxResults = 10) => {
 
         getNextPage() {
             if(this.hasEnded) {
-                return Promise.reject(new Error("End of the list"));
+                return Promise.reject(new Error('End of the list'));
             }
 
             return new Promise((resolve, reject) => {
@@ -151,8 +151,8 @@ export const searchVideos = (query, maxResults = 10) => {
                         resolve(response.items);
                     },
                     error: () => reject(new ApiException('Cannot search for videos',
-                                                         'Something bad has happened while we were asking to YouTube for videos :('))
-                })
+                        'Something bad has happened while we were asking to YouTube for videos :('))
+                });
             });
         }
 
