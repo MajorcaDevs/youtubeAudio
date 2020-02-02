@@ -1,7 +1,8 @@
-import React, { Component } from 'react';
+import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Transition } from 'react-spring/renderprops';
 import { Draggable, Droppable, DragDropContext } from 'react-beautiful-dnd';
+import { usePlayQueue } from '../hooks/play-queue';
 import '../styles/PlayQueueList/PlayQueueList.scss';
 
 
@@ -27,52 +28,52 @@ const PlayQueueItem = ({ song, index, onRemove }) => (
     </Draggable>
 );
 
-export default class PlayQueueList extends Component{
+const PlayQueueList = ({ showing }) => {
+    const [edit, setEdit] = useState(false);
+    const playQueue = usePlayQueue();
 
-    static propTypes = {
-        showing: PropTypes.bool.isRequired,
-        playQueue: PropTypes.object.isRequired,
-        onPlaylistItemReorder: PropTypes.func.isRequired,
-        onPlaylistItemRemove: PropTypes.func.isRequired,
-    };
+    const reordered = useCallback(({ source, destination }) => {
+        if(!destination) {
+            return;
+        }
 
-    constructor(props){
-        super(props);
-        this.state = {
-            edit: false
-        };
-        this.changeEditMode = this.changeEditMode.bind(this);
-        this.reordered = this.reordered.bind(this);
-    }
+        playQueue.swap(source.index, destination.index);
+    }, [playQueue]);
 
-    render () {
-        const { showing, playQueue } = this.props;
-        const { edit } = this.state;
-        let element = [];
-        if (showing) {
-            if (playQueue.values.length <= 1) {
-                element.push(styles => <div id="playQueueList" style={styles}> Play Queue is Empty </div>);
-            } else {
-                element.push(styles => (
+    const changeEditMode = useCallback((e) => {
+        e.preventDefault();
+        setEdit((edit) => !edit);
+    }, []);
+
+    return (
+        <Transition
+            items={showing}
+            from={{ right: PlayQueueList._right }}
+            enter={{ right: 0 }}
+            leave={{ right: PlayQueueList._right }}
+        >
+            {which => which && (playQueue.values.length <= 1
+                ? styles => <div id="playQueueList" style={styles}> Play Queue is Empty </div>
+                : styles => (
                     <div id="playQueueList" style={{overflowY: 'scroll', ...styles}}>
                         <div>
                             <h2>Play Queue</h2>
                             <div className="col-auto edit-icon">
-                                <button className={`btn btn-sm edit-button ${edit ? 'active' : ''}`} onClick={ this.changeEditMode }>
+                                <button className={`btn btn-sm edit-button ${edit ? 'active' : ''}`} onClick={changeEditMode}>
                                     <i className="material-icons">edit</i>
                                 </button>
                             </div>
                         </div>
                         {edit ?
-                            <DragDropContext onDragEnd={this.reordered}>
+                            <DragDropContext onDragEnd={reordered}>
                                 <Droppable droppableId="play-queue-list">
                                     {(provided) => (
-                                        <div className="list-container" ref={provided.innerRef}>
-                                            {[...this.props.playQueue.values].splice(1).map((songInQueue, i) => (
+                                        <div className="list-container" ref={provided.innerRef} {...provided.droppableProps}>
+                                            {playQueue.values.slice(1).map((songInQueue, i) => (
                                                 <PlayQueueItem key={i} song={songInQueue} index={i}
-                                                    onRemove={this.props.onPlaylistItemRemove}/>
-                                            ))
-                                            }
+                                                    onRemove={playQueue.delete}/>
+                                            ))}
+                                            {provided.placeholder}
                                             <hr/>
                                         </div>
                                     )}
@@ -80,7 +81,7 @@ export default class PlayQueueList extends Component{
                             </DragDropContext>
                             :
                             <div className="list-container">
-                                {[...this.props.playQueue.values].splice(1).map((songInQueue, i) => (
+                                {playQueue.values.slice(1).map((songInQueue, i) => (
                                     <div className="row" key={ i }>
                                         <div className="col">
                                             { songInQueue.title }
@@ -91,78 +92,17 @@ export default class PlayQueueList extends Component{
                             </div>
                         }
                     </div>
-                ));
-            }
-        }
+                ))}
+        </Transition>
+    );
+};
 
-        return (
-            <Transition
-                items={showing}
-                from={{ right: PlayQueueList._right }}
-                enter={{ right: 0 }}
-                leave={{ right: PlayQueueList._right }}
-            >
-                {which => which && (playQueue.values.length <= 1
-                    ? styles => <div id="playQueueList" style={styles}> Play Queue is Empty </div>
-                    : styles => (
-                        <div id="playQueueList" style={{overflowY: 'scroll', ...styles}}>
-                            <div>
-                                <h2>Play Queue</h2>
-                                <div className="col-auto edit-icon">
-                                    <button className={`btn btn-sm edit-button ${edit ? 'active' : ''}`} onClick={ this.changeEditMode }>
-                                        <i className="material-icons">edit</i>
-                                    </button>
-                                </div>
-                            </div>
-                            {edit ?
-                                <DragDropContext onDragEnd={this.reordered}>
-                                    <Droppable droppableId="play-queue-list">
-                                        {(provided) => (
-                                            <div className="list-container" ref={provided.innerRef}>
-                                                {[...this.props.playQueue.values].splice(1).map((songInQueue, i) => (
-                                                    <PlayQueueItem key={i} song={songInQueue} index={i}
-                                                        onRemove={this.props.onPlaylistItemRemove}/>
-                                                ))
-                                                }
-                                                <hr/>
-                                            </div>
-                                        )}
-                                    </Droppable>
-                                </DragDropContext>
-                                :
-                                <div className="list-container">
-                                    {[...this.props.playQueue.values].splice(1).map((songInQueue, i) => (
-                                        <div className="row" key={ i }>
-                                            <div className="col">
-                                                { songInQueue.title }
-                                            </div>
-                                        </div>
-                                    ))}
-                                    <hr/>
-                                </div>
-                            }
-                        </div>
-                    ))}
-            </Transition>
-        );
-    }
+PlayQueueList.propTypes = {
+    showing: PropTypes.bool.isRequired,
+};
 
-    changeEditMode(e) {
-        e.preventDefault();
-        this.setState({
-            edit: !this.state.edit
-        });
-    }
-
-    reordered(result) {
-        if(!result.destination) {
-            return;
-        }
-
-        this.props.onPlaylistItemReorder(result.source.index, result.destination.index);
-    }
-
-    static get _right() {
+Object.defineProperty(PlayQueueList, '_right', {
+    get: () => {
         const windowWidth = window.document.body.clientWidth;
         if(windowWidth < 576) {
             return -windowWidth * 0.90;
@@ -173,5 +113,8 @@ export default class PlayQueueList extends Component{
         } else {
             return -400;
         }
-    }
-}
+    },
+    enumerable: true,
+});
+
+export default PlayQueueList;
