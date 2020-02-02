@@ -16,6 +16,7 @@ import {
 import { withPlayQueue } from './hooks/play-queue';
 import { Lastfm, parseTitle } from './LastFM';
 import { selectBestOption, loadAudioURL, addYoutubePlaylist, getPassthroughUrl } from './api';
+import { formatTime, getYoutubeVideoID, getPlaylistID } from './utils';
 
 import './styles/vendors.scss';
 import './styles/App/App.scss';
@@ -48,7 +49,6 @@ class App extends Component {
         });
         this.audioRef = React.createRef();
         this.lastfm = new Lastfm(); window.xD = v => this.lastfm.disableScrobblings = !!v;
-        this.listenerTestButton = this.listenerTestButton.bind(this);
         this.enqueueFromSeach = this.enqueueFromSeach.bind(this);
         this.onWindowKeyUp = this.onWindowKeyUp.bind(this);
         this.titleProgress = this.titleProgress.bind(this);
@@ -56,7 +56,6 @@ class App extends Component {
         this.listenerForm = this.listenerForm.bind(this);
         this.onSongError = this.onSongError.bind(this);
         this.addToQueue = this.addToQueue.bind(this);
-        this.formatTime = this.formatTime.bind(this);
         this.showQueue = this.showQueue.bind(this);
         this.showSearch = this.showSearch.bind(this);
         this.onSongEnd = this.onSongEnd.bind(this);
@@ -66,8 +65,6 @@ class App extends Component {
         this.onPlay = this.onPlay.bind(this);
         this.clear = this.clear.bind(this);
     }
-
-    _testYoutubeVideoURL = 'https://www.youtube.com/watch?v=bM7SZ5SBzyY';
 
     clear(){
         this.props.playQueue.empty();
@@ -218,17 +215,11 @@ class App extends Component {
         }
     }
 
-    listenerTestButton(event) {
-        event.preventDefault();
-        this.setState({ youtubeVideoURL: this._testYoutubeVideoURL });
-        this.loadSong(this.getYoutubeVideoID(this._testYoutubeVideoURL), true);
-    }
-
     listenerForm(event) {
         let url = event.target.value.trim();
         let newState = {youtubeVideoURL: url};
-        let youtubeVideoID = this.getYoutubeVideoID(url);
-        let youtubePlaylistID = this.getPlaylistID(url);
+        let youtubeVideoID = getYoutubeVideoID(url);
+        let youtubePlaylistID = getPlaylistID(url);
         if (youtubeVideoID !== null){
             newState.invalidURL = false;
             newState.youtubeVideoID = youtubeVideoID;
@@ -245,73 +236,10 @@ class App extends Component {
         }
     }
 
-    /**
-     * Tests whether the URL is a YouTube video and extract the video ID from it.
-     * @param {string} url URL to test
-     * @returns String|null the YouTube video ID if the URL is valid, or null otherwise
-     */
-    getYoutubeVideoID(url){
-        let youtubeVideoID =
-            /(?:(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\/?\?(.+))|(?:(?:https?:\/\/)?(?:www\.)?youtu\.be\/(.+))/
-                .exec(url);
-        if (youtubeVideoID !== null) {
-            if(youtubeVideoID[2]) {
-                return youtubeVideoID[2];
-            } else if(youtubeVideoID[1]) {
-                let query = App.parseQuery(youtubeVideoID[1]);
-                return query.v;
-            }
-        } else
-            this.setState({loading: false});
-        return null;
-    }
-
-    /**
-     * Tests whether the URL is a YouTube playlist and extract the playlist ID from it.
-     * @param {string} url URL to test
-     * @returns Object|null the YouTube playlist ID if the URL is valid, or null otherwise
-     */
-    getPlaylistID(url) {
-        let youtubePlaylistID = /playlist\?(.+)/g.exec(url);
-        if(youtubePlaylistID !== null) {
-            return App.parseQuery(youtubePlaylistID[1]).list;
-        }
-        return null;
-    }
-
-    /**
-     * Converts the the query of an URL into a JS object
-     * @param {string} str The query of an URL (the part that starts with ?) but without the initial ?
-     * @returns Object A JS Object that represents the query
-     */
-    static parseQuery(str) {
-        return str
-            .split('&')
-            .map(e => e.split('='))
-            .reduce((obj, last) => ({ ...obj, [last[0]]: last[1] }), {});
-    }
-
-    /**
-     * Converts a time in seconds to `{hour:}minutes:seconds` format.
-     * @param {number} currentTime Time in seconds
-     * @returns string The time formated
-     */
-    formatTime(currentTime) {
-        const seconds = Math.round(currentTime) % 60;
-        let minutes = Math.floor(Math.round(currentTime) / 60);
-        if(!this.audioRef.current || this.audioRef.current.duration < 3600) {
-            return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-        } else {
-            const hours = Math.floor(minutes / 60);
-            minutes %= 60;
-            return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-        }
-    }
-
     titleProgress(){
         const currentTime = this.audioRef.current.currentTime;
         let duration = this.audioRef.current.duration;
-        let time = this.formatTime(currentTime);
+        const time = formatTime(this.audioRef.current.currentTime, this.audioRef.current.duration);
         changeTitle(`${this.state.isPlaying ? '▶' : '▮▮'} ${time} - ${this.state.youtubeVideoTitle} - YouTube Audio`);
 
         if(bowser.safari) {
@@ -429,14 +357,6 @@ class App extends Component {
     componentDidMount() {
         window.addEventListener('keyup', this.onWindowKeyUp);
         window.addEventListener('resize', () => this.forceUpdate());
-
-        //TODO Force redirect people from old place to the new one :)
-        if(window.location.hostname === 'majorcadevs.github.io') {
-            toast.info(<p>We've change the location to
-                <a href="https://youtubeAudio.majorcadevs.com">https://youtubeAudio.majorcadevs.com</a>.
-                <small>We'll redirect you to the new location when this notification is closed :)</small>
-            </p>, { onClose: () => window.location.assign('https://youtubeAudio.majorcadevs.com'), autoClose: 10000 });
-        }
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -444,10 +364,11 @@ class App extends Component {
             this.loadingToast = new LoadingToastController();
         }
 
-        if(prevState.isPlaying !== this.state.isPlaying){
+        if(prevState.isPlaying !== this.state.isPlaying) {
+            const timeFormatted = formatTime(this.audioRef.current.currentTime, this.audioRef.current.duration);
             changeTitle(
                 `${this.state.isPlaying ? '▶' : '▮▮'}
-                ${this.formatTime(this.audioRef.current.currentTime)} - ${this.state.youtubeVideoTitle} - YouTube Audio`
+                ${timeFormatted} - ${this.state.youtubeVideoTitle} - YouTube Audio`
             );
         }
     }
@@ -468,11 +389,6 @@ class App extends Component {
                     <div className="d-flex row justify-content-center align-items-center" id="audioQuery">
                         <div className="col-md-6 col-sm-12">
                             <div className="input-group" id="input">
-                                <div className="input-group-prepend">
-                                    <Button
-                                        id="test" name="test" value="TEST" onClick={ this.listenerTestButton }
-                                        disabled={loading}/>
-                                </div>
                                 <input type="text" className={`form-control ${invalidURL ? 'is-invalid' : ''}`}
                                     id="videoURL" name="videoURL" onChange={ this.listenerForm }
                                     value={ youtubeVideoURL } placeholder="insert here your youtube video url..."

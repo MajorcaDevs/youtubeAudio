@@ -2,8 +2,16 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const Context = createContext();
 
+/**
+ * Gets the current value of the night mode as React Hook
+ * @returns {boolean} Night mode value
+ */
 export const useNightMode = () => useContext(Context).nightMode;
 
+/**
+ * Gets the night mode setter as React Hook
+ * @returns {(nightMode: boolean) => void} Setter for night mode
+ */
 export const useNightModeSetter = () => useContext(Context).setNightMode;
 
 export const NightModeProvider = ({ children }) => {
