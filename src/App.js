@@ -152,6 +152,12 @@ class App extends Component {
             });
 
             const { url, title } = await loadAudioURL(youtubeVideoID, id);
+            if(!this.props.playQueue[0].title && this.props.playQueue[0].id === youtubeVideoID) {
+                this.props.playQueue.update(0, {
+                    ...this.props.playQueue.values[0],
+                    title,
+                });
+            }
             this.setState({
                 youtubeAudioURL: url,
                 youtubeVideoTitle: title,
@@ -447,16 +453,10 @@ class App extends Component {
                 ${this.formatTime(this.audioRef.current.currentTime)} - ${this.state.youtubeVideoTitle} - YouTube Audio`
             );
         }
-
-        if(!prevState.nightMode && this.state.nightMode) {
-            $('body').addClass('AppDark').removeClass('AppLight');
-        } else if(prevState.nightMode && !this.state.nightMode) {
-            $('body').removeClass('AppDark').addClass('AppLight');
-        }
     }
 
     render() {
-        const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, nightMode,
+        const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading,
             showingQueue, currentFormat, showingSearch } = this.state;
         const { playQueue } = this.props;
         return (
@@ -470,16 +470,6 @@ class App extends Component {
                     </p>
                     <div className="d-flex row justify-content-center align-items-center" id="audioQuery">
                         <div className="col-md-6 col-sm-12">
-                            {/*
-                        ----
-                        Disabled until bug confirm
-                        ----
-                        <AdBlockDetect>
-                        <div className="alert alert-danger" role="alert">
-                        Please, consider disabling Ad-Block in order to make the website work properly
-                        </div>
-                        </AdBlockDetect>
-                        */}
                             <div className="input-group" id="input">
                                 <div className="input-group-prepend">
                                     <Button
@@ -515,10 +505,10 @@ class App extends Component {
                             }
                         </div>
                     </div>
-                    <PlayQueueList showing={ showingQueue } />
-                    <SearchPanel showing={ showingSearch } onPlayClicked={ this.playFromSeach } onEnqueueClicked={ this.enqueueFromSeach } />
-                    <PlayQueueListButton onClick={ this.showQueue } showingQueue={ showingQueue } nightMode={ nightMode } left={ showingQueue || showingSearch } />
-                    <SearchButton onClick={ this.showSearch } showingSearch={ showingSearch } nightMode={ nightMode } left={ showingQueue || showingSearch } />
+                    <PlayQueueList showing={showingQueue} />
+                    <SearchPanel showing={showingSearch} onPlayClicked={this.playFromSeach} onEnqueueClicked={this.enqueueFromSeach} />
+                    <PlayQueueListButton onClick={this.showQueue} showingQueue={showingQueue} left={showingQueue || showingSearch} />
+                    <SearchButton onClick={this.showSearch} showingSearch={showingSearch} left={showingQueue || showingSearch} />
                 </div>
 
                 <Footer />

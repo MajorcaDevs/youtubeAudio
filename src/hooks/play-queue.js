@@ -42,6 +42,16 @@ export const PlayQueueProvider = ({ children }) => {
                 ]);
             }
         },
+        update(indexOrElement, element) {
+            const index = typeof indexOrElement === 'number' ?
+                indexOrElement :
+                queue.findIndex(({ id }) => id === element.id);
+            if(index === -1) {
+                return;
+            }
+
+            setQueue([...queue.slice(0, index), element, ...queue.slice(index + 1)]);
+        },
         swap(fromIndex, toIndex) {
             const newQueue = [...queue];
             const [removed] = newQueue.splice(fromIndex + 1, 1);
