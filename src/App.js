@@ -14,8 +14,7 @@ import {
     SearchButton,
     SearchPanel,
 } from './components';
-import { NightModeProvider } from './hooks/night-mode';
-import PlayQueue from './PlayQueue';
+import { withPlayQueue } from './hooks/play-queue';
 import { Lastfm, parseTitle } from './LastFM';
 import { selectBestOption, loadAudioURL, addYoutubePlaylist, getPassthroughUrl } from './api';
 
@@ -47,16 +46,12 @@ class App extends Component {
             showingQueue: false,
             showingSearch: false,
             youtubePlaylistID: '',
-            playQueue: new PlayQueue(),
             isPlaying: false,
             scrobblingState: 'none', // 'none', 'nowPlaying', 'scrobbled'
         });
         this.audioRef = React.createRef();
         this.lastfm = new Lastfm(); window.xD = v => this.lastfm.disableScrobblings = !!v;
-        this.onPlaylistItemReorder = this.onPlaylistItemReorder.bind(this);
-        this.onPlaylistItemRemove = this.onPlaylistItemRemove.bind(this);
         this.listenerTestButton = this.listenerTestButton.bind(this);
-        this.nightModeListener = this.nightModeListener.bind(this);
         this.enqueueFromSeach = this.enqueueFromSeach.bind(this);
         this.onWindowKeyUp = this.onWindowKeyUp.bind(this);
         this.titleProgress = this.titleProgress.bind(this);
@@ -78,7 +73,7 @@ class App extends Component {
     _testYoutubeVideoURL = 'https://www.youtube.com/watch?v=bM7SZ5SBzyY';
 
     clear(){
-        this.setState({playQueue: this.state.playQueue.emptyQueue()});
+        this.props.playQueue.empty();
     }
 
     async addToQueue() {
@@ -86,15 +81,12 @@ class App extends Component {
             this.setState({ loading: true });
             try {
                 const { title } = await loadAudioURL(this.state.youtubeVideoID);
+                this.props.playQueue.add({ id: this.state.youtubeVideoID, title });
                 this.setState({
                     loading: false,
-                    playQueue: this.state.playQueue.add({
-                        id: this.state.youtubeVideoID,
-                        title
-                    })
                 }, () => {
-                    if (this.state.playQueue.values.length && !this.state.youtubeAudioURL){
-                        this.loadSong(this.state.playQueue.values[0].id);
+                    if (this.props.playQueue.length && !this.state.youtubeAudioURL){
+                        this.loadSong(this.props.playQueue.values[0].id);
                         this.loadingToast.dismiss();
                     } else {
                         this.loadingToast.success('Enqueued', `"${title}" was added to the queue`);
@@ -110,18 +102,19 @@ class App extends Component {
     }
 
     playSong(){
-        this.setState({
-            playQueue: !this.state.youtubeVideoID ? this.state.playQueue : this.state.playQueue.addFirst({
+        if(this.state.youtubeVideoID) {
+            this.props.playQueue.addFirst({
                 id: this.state.youtubeVideoID,
-                title: null
-            })
-        });
+                title: null,
+            });
+        }
+
         if (this.state.youtubeVideoID) {
             this.loadSong(this.state.youtubeVideoID, true);
         } else if(this.state.youtubePlaylistID) {
             this.loadPlaylist(true);
-        } else if(this.state.playQueue.values.length > 0 && !this.state.youtubeVideoURL) {
-            this.loadSong(this.state.playQueue.values[0].id);
+        } else if(this.props.playQueue.length > 0 && !this.state.youtubeVideoURL) {
+            this.loadSong(this.props.playQueue.values[0].id);
         }
     }
 
@@ -205,14 +198,14 @@ class App extends Component {
         this.setState({ loading: true });
         try {
             const items = await addYoutubePlaylist(this.state.youtubePlaylistID, true);
+            this.props.playQueue.add(...items);
             let newState = {
                 loading: false,
-                playQueue: this.state.playQueue.add(...items),
             };
-            if(!this.state.youtubeAudioURL && newState.playQueue.values.length > 0) {
-                newState.youtubeVideoID = newState.playQueue.values[0].id;
-                newState.youtubeVideoTitle = newState.playQueue.values[0].title;
-                this.loadSong(newState.playQueue.values[0].id, startPlaying);
+            if(!this.state.youtubeAudioURL && this.props.playQueue.length === 0) {
+                newState.youtubeVideoID = items[0].id;
+                newState.youtubeVideoTitle = items[0].title;
+                this.loadSong(items[0].id, startPlaying);
             }
             this.setState(newState);
         } catch(e) {
@@ -295,11 +288,6 @@ class App extends Component {
             .reduce((obj, last) => ({ ...obj, [last[0]]: last[1] }), {});
     }
 
-    nightModeListener(event){
-        event.preventDefault();
-        this.setState({ nightMode: !this.state.nightMode });
-    }
-
     /**
      * Converts a time in seconds to `{hour:}minutes:seconds` format.
      * @param {number} currentTime Time in seconds
@@ -371,9 +359,10 @@ class App extends Component {
     onPause(){ this.setState({isPlaying: false}); }
 
     onSongEnd() {
-        this.setState({ playQueue: this.state.playQueue.deleteFirst(), scrobblingState: 'none' }, () => {
-            if (this.state.playQueue.values.length > 0) {
-                this.loadSong(this.state.playQueue.values[0].id, true);
+        this.props.playQueue.deleteFirst();
+        this.setState({ scrobblingState: 'none' }, () => {
+            if (this.props.playQueue.length > 0) {
+                this.loadSong(this.props.playQueue.values[0].id, true);
             }
         });
     }
@@ -418,20 +407,6 @@ class App extends Component {
     nextSong(event) {
         event.preventDefault();
         this.onSongEnd();
-    }
-
-    onPlaylistItemReorder(startIndex, endIndex) {
-        const playQueue = this.state.playQueue.reorder(startIndex, endIndex);
-        this.setState({
-            playQueue
-        });
-    }
-
-    onPlaylistItemRemove(element) {
-        const playQueue = this.state.playQueue.delete(element);
-        this.setState({
-            playQueue
-        });
     }
 
     onWindowKeyUp(event) {
@@ -482,75 +457,71 @@ class App extends Component {
 
     render() {
         const { youtubeVideoURL, invalidURL, youtubeVideoTitle, youtubeAudioURL, loading, nightMode,
-            showingQueue, currentFormat, playQueue, showingSearch } = this.state;
+            showingQueue, currentFormat, showingSearch } = this.state;
+        const { playQueue } = this.props;
         return (
             <div id="AppContainer">
-                <NightModeProvider>
-                    <Header lastfm={ this.lastfm } />
+                <Header lastfm={ this.lastfm } />
 
-                    <div className="container-fluid">
-                        <ToastContainer pauseOnHover={ false } />
-                        <p className="greyText" id="greyText">
-                            Enjoy the audio from the youtube videos!
-                        </p>
-                        <div className="d-flex row justify-content-center align-items-center" id="audioQuery">
-                            <div className="col-md-6 col-sm-12">
-                                {/*
-                            ----
-                            Disabled until bug confirm
-                            ----
-                            <AdBlockDetect>
-                            <div className="alert alert-danger" role="alert">
-                            Please, consider disabling Ad-Block in order to make the website work properly
-                            </div>
-                            </AdBlockDetect>
-                            */}
-                                <div className="input-group" id="input">
-                                    <div className="input-group-prepend">
-                                        <Button
-                                            id="test" name="test" value="TEST" onClick={ this.listenerTestButton }
-                                            disabled={loading}/>
-                                    </div>
-                                    <input type="text" className={`form-control ${invalidURL ? 'is-invalid' : ''}`}
-                                        id="videoURL" name="videoURL" onChange={ this.listenerForm }
-                                        value={ youtubeVideoURL } placeholder="insert here your youtube video url..."
+                <div className="container-fluid">
+                    <ToastContainer pauseOnHover={ false } />
+                    <p className="greyText" id="greyText">
+                        Enjoy the audio from the youtube videos!
+                    </p>
+                    <div className="d-flex row justify-content-center align-items-center" id="audioQuery">
+                        <div className="col-md-6 col-sm-12">
+                            {/*
+                        ----
+                        Disabled until bug confirm
+                        ----
+                        <AdBlockDetect>
+                        <div className="alert alert-danger" role="alert">
+                        Please, consider disabling Ad-Block in order to make the website work properly
+                        </div>
+                        </AdBlockDetect>
+                        */}
+                            <div className="input-group" id="input">
+                                <div className="input-group-prepend">
+                                    <Button
+                                        id="test" name="test" value="TEST" onClick={ this.listenerTestButton }
                                         disabled={loading}/>
                                 </div>
-                                <div className="row justify-content-center">
-                                    <div className="btn-group mt-3">
-                                        <Button
-                                            name="Play Song" value="Play Now!" onClick={ this.playSong }
-                                            disabled={(loading || invalidURL || youtubeVideoURL.length === 0) && playQueue.values.length < 1}/>
-                                        <Button
-                                            name="Add to Queue" value="Enqueue" onClick={ this.addToQueue }
-                                            disabled={loading || invalidURL || youtubeVideoURL.length === 0}/>
-                                        <Button
-                                            name="Clear queueue" value="Clear Queue" onClick={ this.clear }
-                                            disabled={loading || playQueue.values.length < 2}/>
-                                        <Button
-                                            name="Next song" value="Next Song" onClick={ this.nextSong }
-                                            disabled={loading || playQueue.values.length < 2}/>
-                                    </div>
-                                </div>
-                                <NowPlayingText title={youtubeVideoTitle} currentFormat={currentFormat} />
-                                { this.state.youtubeAudioURL ?
-                                    <audio id="player" className="player" controls src={ youtubeAudioURL } onError={ this.onSongError }
-                                        onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd }
-                                        onPlay={this.onPlay} onPause={this.onPause} /> : null
-                                }
+                                <input type="text" className={`form-control ${invalidURL ? 'is-invalid' : ''}`}
+                                    id="videoURL" name="videoURL" onChange={ this.listenerForm }
+                                    value={ youtubeVideoURL } placeholder="insert here your youtube video url..."
+                                    disabled={loading}/>
                             </div>
+                            <div className="row justify-content-center">
+                                <div className="btn-group mt-3">
+                                    <Button
+                                        name="Play Song" value="Play Now!" onClick={ this.playSong }
+                                        disabled={(loading || invalidURL || youtubeVideoURL.length === 0) && playQueue.values.length < 1}/>
+                                    <Button
+                                        name="Add to Queue" value="Enqueue" onClick={ this.addToQueue }
+                                        disabled={loading || invalidURL || youtubeVideoURL.length === 0}/>
+                                    <Button
+                                        name="Clear queueue" value="Clear Queue" onClick={ this.clear }
+                                        disabled={loading || playQueue.values.length < 2}/>
+                                    <Button
+                                        name="Next song" value="Next Song" onClick={ this.nextSong }
+                                        disabled={loading || playQueue.values.length < 2}/>
+                                </div>
+                            </div>
+                            <NowPlayingText title={youtubeVideoTitle} currentFormat={currentFormat} />
+                            { this.state.youtubeAudioURL ?
+                                <audio id="player" className="player" controls src={ youtubeAudioURL } onError={ this.onSongError }
+                                    onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd }
+                                    onPlay={this.onPlay} onPause={this.onPause} /> : null
+                            }
                         </div>
-                        <PlayQueueList showing={ showingQueue }
-                            playQueue={ this.state.playQueue }
-                            onPlaylistItemReorder={ this.onPlaylistItemReorder }
-                            onPlaylistItemRemove={ this.onPlaylistItemRemove } />
-                        <SearchPanel showing={ showingSearch } onPlayClicked={ this.playFromSeach } onEnqueueClicked={ this.enqueueFromSeach } />
-                        <PlayQueueListButton onClick={ this.showQueue } showingQueue={ showingQueue } nightMode={ nightMode } left={ showingQueue || showingSearch } />
-                        <SearchButton onClick={ this.showSearch } showingSearch={ showingSearch } nightMode={ nightMode } left={ showingQueue || showingSearch } />
                     </div>
+                    <PlayQueueList showing={ showingQueue } />
+                    <SearchPanel showing={ showingSearch } onPlayClicked={ this.playFromSeach } onEnqueueClicked={ this.enqueueFromSeach } />
+                    <PlayQueueListButton onClick={ this.showQueue } showingQueue={ showingQueue } nightMode={ nightMode } left={ showingQueue || showingSearch } />
+                    <SearchButton onClick={ this.showSearch } showingSearch={ showingSearch } nightMode={ nightMode } left={ showingQueue || showingSearch } />
+                </div>
 
-                    <Footer />
-                </NightModeProvider>
+                <Footer />
             </div>
         );
     }
@@ -594,4 +565,4 @@ class LoadingToastController {
     }
 }
 
-export default App;
+export default withPlayQueue(App);
