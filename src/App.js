@@ -38,7 +38,6 @@ class App extends Component {
             youtubeAudioURL: '',
             youtubeVideoTitle: '',
             loading: false,
-            nightMode: true,
             currentFormat: '',
             youtubeVideoID: '',
             showingQueue: false,
@@ -63,11 +62,6 @@ class App extends Component {
         this.nextSong = this.nextSong.bind(this);
         this.onPause = this.onPause.bind(this);
         this.onPlay = this.onPlay.bind(this);
-        this.clear = this.clear.bind(this);
-    }
-
-    clear(){
-        this.props.playQueue.empty();
     }
 
     async addToQueue() {
@@ -379,10 +373,10 @@ class App extends Component {
         const { playQueue } = this.props;
         return (
             <div id="AppContainer">
-                <Header lastfm={ this.lastfm } />
+                <Header lastfm={this.lastfm} />
 
                 <div className="container-fluid">
-                    <ToastContainer pauseOnHover={ false } />
+                    <ToastContainer pauseOnHover={false} />
                     <p className="greyText" id="greyText">
                         Enjoy the audio from the youtube videos!
                     </p>
@@ -390,30 +384,27 @@ class App extends Component {
                         <div className="col-md-6 col-sm-12">
                             <div className="input-group" id="input">
                                 <input type="text" className={`form-control ${invalidURL ? 'is-invalid' : ''}`}
-                                    id="videoURL" name="videoURL" onChange={ this.listenerForm }
-                                    value={ youtubeVideoURL } placeholder="insert here your youtube video url..."
+                                    id="videoURL" name="videoURL" onChange={this.listenerForm}
+                                    value={youtubeVideoURL} placeholder="insert here your youtube video url..."
                                     disabled={loading}/>
                             </div>
                             <div className="row justify-content-center">
                                 <div className="btn-group mt-3">
                                     <Button
-                                        name="Play Song" value="Play Now!" onClick={ this.playSong }
+                                        name="Play Song" value="Play Now!" onClick={this.playSong}
                                         disabled={(loading || invalidURL || youtubeVideoURL.length === 0) && playQueue.values.length === 0}/>
                                     <Button
-                                        name="Add to Queue" value="Enqueue" onClick={ this.addToQueue }
+                                        name="Add to Queue" value="Enqueue" onClick={this.addToQueue}
                                         disabled={loading || invalidURL || youtubeVideoURL.length === 0}/>
                                     <Button
-                                        name="Clear queueue" value="Clear Queue" onClick={ this.clear }
-                                        disabled={loading || playQueue.values.length === 0}/>
-                                    <Button
-                                        name="Next song" value="Next Song" onClick={ this.nextSong }
+                                        name="Next song" value="Next Song" onClick={this.nextSong}
                                         disabled={loading || playQueue.values.length < 2}/>
                                 </div>
                             </div>
                             <NowPlayingText title={youtubeVideoTitle} currentFormat={currentFormat} />
                             { this.state.youtubeAudioURL ?
-                                <audio id="player" className="player" controls src={ youtubeAudioURL } onError={ this.onSongError }
-                                    onTimeUpdate={ this.titleProgress } ref={this.audioRef} onEnded={ this.onSongEnd }
+                                <audio id="player" className="player" controls src={youtubeAudioURL} onError={this.onSongError}
+                                    onTimeUpdate={this.titleProgress} ref={this.audioRef} onEnded={this.onSongEnd}
                                     onPlay={this.onPlay} onPause={this.onPause} /> : null
                             }
                         </div>

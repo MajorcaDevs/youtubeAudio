@@ -32,16 +32,21 @@
         background-color: #181818;
     }
 
+    &.list {
+        overflow-y: scroll;
+    }
+
     > h2 {
         user-select: none;
     }
 
     .edit-icon {
         position: absolute;
-        top: 5px;
-        right: 15px;
+        top: 20px;
+        right: 0;
 
-        .edit-button {
+        .edit-button,
+        .clear-button {
             background: none;
             color: inherit;
 
