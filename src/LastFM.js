@@ -1,18 +1,6 @@
 import md5 from 'blueimp-md5';
 import { LASTFM_API_KEY, LASTFM_SECRET } from './keys';
 
-import { doTest } from './lastfm.parseTitle.test';
-
-Map.prototype.map = function map(func) {
-    let mapped = [];
-    this.forEach((value, key) => mapped.push(func(value, key)));
-    return mapped;
-};
-
-Map.prototype.sort = function sort(func) {
-    return new Map([...this.entries()].sort((a, b) => func({ key: a[0], value: a[1] }, { key: b[0], value: b[1] })));
-};
-
 export const parseTitle = (text) => {
     text = text.replace(/(?:official )?(?:lyric )?(?:video|audio)/gi, '')
         .replace(/[ ([]?hq[)\] ]?/gi, '[-]')
@@ -28,7 +16,9 @@ export const parseTitle = (text) => {
             title: parts[2].trim(),
             artist: parts[1].trim()
         };
-    } else {
+    }
+
+    if(!isChunguillo) {
         const parts = /([a-záéíóúàèìòùäëïöüâêîôûç_0-9&./',\- ]+) (?:'|‘)([a-záéíóúàèìòùäëïöüâêîôûç_0-9&./',\- ()]+)(?:'|’)/i.exec(text);
         if(parts !== null) {
             return {
@@ -36,13 +26,18 @@ export const parseTitle = (text) => {
                 artist: parts[1].trim()
             };
         }
-        return null;
     }
-};
 
-if(process.env.NODE_ENV !== 'production') {
-    doTest();
-}
+    if(isChunguillo) {
+        const pieces = text.split(' - ');
+        return {
+            title: pieces.slice(1).join(' - '),
+            artist: pieces[0],
+        };
+    }
+
+    return null;
+};
 
 export class Lastfm {
     static baseUrl = 'https://ws.audioscrobbler.com/2.0/';
@@ -56,7 +51,7 @@ export class Lastfm {
             return x;
         }, {});
         if(window.localStorage.getItem('lastfm')) {
-            const { userToken, userName, disableScrobblings } = JSON.parse(window.localStorage.getItem('lastfm'));
+            const { userToken, userName, disableScrobblings } = JSON.parse(window.localStorage.getItem('youtubeaudio:lastfm'));
             this._userToken = userToken;
             this._userName = userName;
             this._disableScrobblings = disableScrobblings;
@@ -88,8 +83,8 @@ export class Lastfm {
 
     set disableScrobblings(value) {
         this._disableScrobblings = value;
-        window.localStorage.setItem('lastfm', JSON.stringify({
-            ...JSON.parse(window.localStorage.getItem('lastfm')),
+        window.localStorage.setItem('youtubeaudio:lastfm', JSON.stringify({
+            ...JSON.parse(window.localStorage.getItem('youtubeaudio:lastfm')),
             disableScrobblings: this._disableScrobblings,
         }));
     }
@@ -100,7 +95,7 @@ export class Lastfm {
     }
 
     deauthenticate() {
-        window.localStorage.removeItem('lastfm');
+        window.localStorage.removeItem('youtubeaudio:lastfm');
         window.location.reload();
     }
 
@@ -131,33 +126,36 @@ export class Lastfm {
         }
     }
 
-    _makeRequest(method, params, requiresSignature = true) {
-        let mParams = new Map(params instanceof Map ? params : Object.entries(params));
-        mParams.set('api_key', LASTFM_API_KEY);
+    async _makeRequest(method, params, requiresSignature = true) {
+        let mParams = params instanceof Map ? Object.fromEntries(params.entries()) : Object.entries(params);
+        mParams.api_key = LASTFM_API_KEY;
         if(this._userToken) {
-            mParams.set('sk', this._userToken);
+            mParams.sk = this._userToken;
         }
-        mParams.set('api_sig', this._signature(mParams));
-        mParams.set('format', 'json');
+        mParams.api_sig = this._signature(mParams);
+        mParams.format = 'json';
 
-        const query = mParams.map((value, key) => `${key}=${encodeURIComponent(value)}`).join('&');
+        const query = Object.entries(mParams)
+            .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+            .join('&');
         method = method.toLowerCase();
         if(method === 'get') {
-            return fetch(`${Lastfm.baseUrl}?${query}`).then(response => response.json());
+            const res = await fetch(`${Lastfm.baseUrl}?${query}`);
+            return res.json();
         } else if(method === 'post') {
             const headers = new Headers();
             headers.append('Content-Type', 'application/x-www-form-urlencoded; charset=utf-8');
-            return fetch(Lastfm.baseUrl, { method: 'POST', body: query, headers })
-                .then(response => response.json());
+            const res = await fetch(Lastfm.baseUrl, { method: 'POST', body: query, headers });
+            return res.json();
         } else {
             throw new Error('Unsupported method: ' + method);
         }
     }
 
     _signature(params) {
-        const sig = params
-            .sort((a, b) => a.key.localeCompare(b.key))
-            .map((value, key) => key + value)
+        const sig = Object.entries(params)
+            .sort(([a], [b]) => a.key.localeCompare(b.key))
+            .map(([key, value]) => key + value)
             .reduce((prev, value) => prev + value, '')
             + LASTFM_SECRET;
         return md5(sig);
