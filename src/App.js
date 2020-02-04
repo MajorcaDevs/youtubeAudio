@@ -191,7 +191,7 @@ class App extends Component {
     async loadPlaylist(startPlaying) {
         this.setState({ loading: true });
         try {
-            const items = await addYoutubePlaylist(this.state.youtubePlaylistID, true);
+            const items = await addYoutubePlaylist(this.state.youtubePlaylistID);
             this.props.playQueue.add(...items);
             let newState = {
                 loading: false,

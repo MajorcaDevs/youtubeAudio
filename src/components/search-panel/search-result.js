@@ -29,9 +29,9 @@ const SearchResult = ({ item, onPlayClicked, onEnqueueClicked }) => {
                     <small>{item.snippet.title}</small>
                 </div>
                 <div className="col-12 align-self-end">
-                    <button className="btn btn-link" onClick={playClickListener}>
+                    {item.id.kind === 'youtube#video' && <button className="btn btn-link" onClick={playClickListener}>
                         <i className="material-icons">play_circle_outline</i>
-                    </button>
+                    </button>}
                     <button className="btn btn-link" onClick={enqueueClickListener}>
                         <i className="material-icons">playlist_add</i>
                     </button>
@@ -42,7 +42,13 @@ const SearchResult = ({ item, onPlayClicked, onEnqueueClicked }) => {
 };
 
 SearchResult.propTypes = {
-    item: PropTypes.object.isRequired,
+    item: PropTypes.shape({
+        id: PropTypes.shape({
+            kind: PropTypes.string.isRequired,
+            videoId: PropTypes.string,
+            playlistId: PropTypes.string,
+        }).isRequired,
+    }).isRequired,
     onPlayClicked: PropTypes.func.isRequired,
     onEnqueueClicked: PropTypes.func.isRequired,
 };

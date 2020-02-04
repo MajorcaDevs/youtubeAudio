@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
+import nanoid from 'nanoid';
 
 const Context = createContext();
 
@@ -10,6 +11,18 @@ export const withPlayQueue = (Component) => (props) => {
     return <Component playQueue={playQueue} {...props} />;
 };
 
+const songMap = (song) => {
+    if(!song.objId) {
+        song.objId = nanoid();
+    }
+    return song;
+};
+
+const songFind = (element) => ({ id, objId }) => (
+    (!(objId && element.objId) || objId === element.objId)
+        && id === element.id
+);
+
 export const PlayQueueProvider = ({ children }) => {
     const [queue, setQueue] = useState(
         JSON.parse(sessionStorage.getItem('youtube-audio:playQueue') || '[]')
@@ -17,10 +30,10 @@ export const PlayQueueProvider = ({ children }) => {
 
     const methods = useMemo(() => ({
         add(...elements) {
-            setQueue([...queue, ...elements]);
+            setQueue([...queue, ...elements.map(songMap)]);
         },
         addFirst(element) {
-            setQueue([element, ...queue]);
+            setQueue([songMap(element), ...queue]);
         },
         empty() {
             setQueue([]);
@@ -34,7 +47,7 @@ export const PlayQueueProvider = ({ children }) => {
             return null;
         },
         delete(element) {
-            const index = queue.findIndex(({ id }) => id === element.id);
+            const index = queue.findIndex(songFind(element));
             if(index !== -1) {
                 setQueue([
                     ...queue.slice(0, index),
@@ -45,12 +58,12 @@ export const PlayQueueProvider = ({ children }) => {
         update(indexOrElement, element) {
             const index = typeof indexOrElement === 'number' ?
                 indexOrElement :
-                queue.findIndex(({ id }) => id === element.id);
+                queue.findIndex(songFind(element));
             if(index === -1) {
                 return;
             }
 
-            setQueue([...queue.slice(0, index), element, ...queue.slice(index + 1)]);
+            setQueue([...queue.slice(0, index), songMap(element), ...queue.slice(index + 1)]);
         },
         swap(fromIndex, toIndex) {
             const newQueue = [...queue];

@@ -7,7 +7,7 @@ import { usePlayQueue } from '../../hooks/play-queue';
 
 const PlayQueueEditList = ({ edit, reordered }) => {
     const playQueue = usePlayQueue();
-    const transitions = useTransition(playQueue.values, ({ id }) => id, {
+    const transitions = useTransition(playQueue.values, ({ objId }) => objId, {
         from: { transform: 'translateX(25px)', opacity: 0 },
         enter: { transform: 'translateX(0)', opacity: 1 },
         leave: { transform: 'scale(0.9)', opacity: 0 },
