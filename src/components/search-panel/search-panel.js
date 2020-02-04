@@ -4,9 +4,10 @@ import { useTransition, animated } from 'react-spring';
 import Pagination from './pagination';
 import SearchResult from './search-result';
 import { searchVideos } from '../../api';
+import { useEnqueuePlaylist, useEnqueueSong } from '../../hooks/enqueue';
 import '../../styles/SearchPanel/SearchPanel.scss';
 
-const SearchPanel = ({ showing, onPlayClicked, onEnqueueClicked }) => {
+const SearchPanel = ({ showing, onPlayClicked }) => {
     const transitions = useTransition(showing, null, {
         from: { right: SearchPanel._right },
         enter: { right: 0 },
@@ -17,6 +18,8 @@ const SearchPanel = ({ showing, onPlayClicked, onEnqueueClicked }) => {
     const [results, setResults] = useState([]);
     const [page, setPage] = useState(0);
     const search = useRef(null);
+    const enqueuePlaylist = useEnqueuePlaylist();
+    const enqueueSong = useEnqueueSong();
 
     const searchFieldChanged = useCallback((event) => {
         event.preventDefault();
@@ -65,6 +68,13 @@ const SearchPanel = ({ showing, onPlayClicked, onEnqueueClicked }) => {
         )
     ), [results, page, nextPage, prevPage]);
 
+    const onEnqueueClicked = useCallback(
+        ({ id: { kind, playlistId, videoId }, snippet: { title } }) => (
+            kind === 'youtube#playlist' ? enqueuePlaylist(playlistId, title) : enqueueSong(videoId, title)
+        ),
+        [enqueuePlaylist, enqueueSong],
+    );
+
     return transitions.map(({ item, key, props }) => item && (
         <animated.div id="searchPanel" style={props} key={key}>
             <div className="mt-4 ml-4 mr-4">
@@ -99,7 +109,6 @@ const SearchPanel = ({ showing, onPlayClicked, onEnqueueClicked }) => {
 SearchPanel.propTypes = {
     showing: PropTypes.bool.isRequired,
     onPlayClicked: PropTypes.func.isRequired,
-    onEnqueueClicked: PropTypes.func.isRequired,
 };
 
 Object.defineProperty(SearchPanel, '_right', {

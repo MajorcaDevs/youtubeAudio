@@ -48,7 +48,6 @@ class App extends Component {
         });
         this.audioRef = React.createRef();
         this.lastfm = new Lastfm(); window.xD = v => this.lastfm.disableScrobblings = !!v;
-        this.enqueueFromSeach = this.enqueueFromSeach.bind(this);
         this.onWindowKeyUp = this.onWindowKeyUp.bind(this);
         this.titleProgress = this.titleProgress.bind(this);
         this.playFromSeach = this.playFromSeach.bind(this);
@@ -103,14 +102,6 @@ class App extends Component {
             this.loadPlaylist(true);
         } else if(this.props.playQueue.length > 0 && !this.state.youtubeVideoURL) {
             this.loadSong(this.props.playQueue.values[0].id);
-        }
-    }
-
-    enqueueFromSeach(item) {
-        if(item.id.kind === 'youtube#video') {
-            this.setState({ youtubeVideoID: item.id.videoId }, () => this.addToQueue());
-        } else if(item.id.kind === 'youtube#playlist') {
-            this.setState({ youtubePlaylistID: item.id.playlistId }, () => this.addToQueue());
         }
     }
 
@@ -410,7 +401,7 @@ class App extends Component {
                         </div>
                     </div>
                     <PlayQueueList showing={showingQueue} />
-                    <SearchPanel showing={showingSearch} onPlayClicked={this.playFromSeach} onEnqueueClicked={this.enqueueFromSeach} />
+                    <SearchPanel showing={showingSearch} onPlayClicked={this.playFromSeach} />
                     <PlayQueueListButton onClick={this.showQueue} showingQueue={showingQueue} left={showingQueue || showingSearch} />
                     <SearchButton onClick={this.showSearch} showingSearch={showingSearch} left={showingQueue || showingSearch} />
                 </div>
