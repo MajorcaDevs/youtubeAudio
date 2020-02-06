@@ -9,9 +9,9 @@ import '../../styles/SearchPanel/SearchPanel.scss';
 
 const SearchPanel = ({ showing, onPlayClicked }) => {
     const transitions = useTransition(showing, null, {
-        from: { right: SearchPanel._right },
-        enter: { right: 0 },
-        leave: { right: SearchPanel._right },
+        from: { transform: `translateX(${SearchPanel._right}px)` },
+        enter: { transform: 'translateX(0)' },
+        leave: { transform: `translateX(${SearchPanel._right}px)` },
     });
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
@@ -115,13 +115,13 @@ Object.defineProperty(SearchPanel, '_right', {
     get: () => {
         const windowWidth = window.document.body.clientWidth;
         if(windowWidth < 576) {
-            return -windowWidth * 0.90;
+            return windowWidth * 0.90;
         } else if(windowWidth < 768) {
-            return -288;
+            return 288;
         } else if(windowWidth < 1200) {
-            return -384;
+            return 384;
         } else {
-            return -400;
+            return 400;
         }
     },
 });

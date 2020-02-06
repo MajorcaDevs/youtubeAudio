@@ -1,13 +1,14 @@
 import React from 'react';
 import { useSpring, animated } from 'react-spring';
 import { useNightMode } from '../hooks/night-mode';
-import PlayQueueList from './play-queue-list';
+import SearchPanel from './search-panel';
 
 const SearchButton = ({ showingSearch, onClick, left }) => {
     const nightMode = useNightMode();
+    const expectedTranslation = left ? -Math.min(SearchPanel._right, document.body.clientWidth - 45) : 0;
     const styles = useSpring({
-        from: { right: 15 },
-        to: { right: left ? Math.min(-PlayQueueList._right + 15, document.body.clientWidth - 45) : 15 },
+        from: { transform: 'translateX(0px)' },
+        to: { transform: `translateX(${expectedTranslation}px)` },
     });
 
     return (

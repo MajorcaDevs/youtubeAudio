@@ -5,9 +5,10 @@ import PlayQueueList from './play-queue-list';
 
 const PlayQueueListButton = ({ showingQueue, onClick, left }) => {
     const nightMode = useNightMode();
+    const expectedTranslation = left ? -Math.min(PlayQueueList._right, document.body.clientWidth - 45) : 0;
     const styles = useSpring({
-        from: { right: 15 },
-        to: { right: left ? Math.min(-PlayQueueList._right + 15, document.body.clientWidth - 45) : 15 },
+        from: { transform: 'translateX(0px)' },
+        to: { transform: `translateX(${expectedTranslation}px)` },
     });
 
     return (

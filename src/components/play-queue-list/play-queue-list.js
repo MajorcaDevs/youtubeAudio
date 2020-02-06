@@ -9,9 +9,9 @@ const PlayQueueList = ({ showing }) => {
     const [edit, setEdit] = useState(false);
     const playQueue = usePlayQueue();
     const transitions = useTransition(showing, null, {
-        from: { right: PlayQueueList._right },
-        enter: { right: 0 },
-        leave: { right: PlayQueueList._right },
+        from: { transform: `translateX(${PlayQueueList._right}px)` },
+        enter: { transform: 'translateX(0)' },
+        leave: { transform: `translateX(${PlayQueueList._right}px)` },
     });
 
     const reordered = useCallback(({ source, destination }) => {
@@ -67,13 +67,13 @@ Object.defineProperty(PlayQueueList, '_right', {
     get: () => {
         const windowWidth = window.document.body.clientWidth;
         if(windowWidth < 576) {
-            return -windowWidth * 0.90;
+            return windowWidth * 0.90;
         } else if(windowWidth < 768) {
-            return -288;
+            return 288;
         } else if(windowWidth < 1200) {
-            return -384;
+            return 384;
         } else {
-            return -400;
+            return 400;
         }
     },
     enumerable: true,
