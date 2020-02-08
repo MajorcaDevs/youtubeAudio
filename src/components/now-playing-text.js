@@ -11,7 +11,7 @@ const NowPlayingText = () => {
 
     const currentFormat = `(${song.codec}@~${song.bitrate}kbps)`;
     return (
-        <div className="title" id="stateText">
+        <div className="now-playing-text" id="stateText">
             <div id="quality-format">{song.codec ? currentFormat : ''}</div>
             <div id="NowPlaying">Now Playing:</div>
             <div id="title" className="text-center">{song.title}</div>

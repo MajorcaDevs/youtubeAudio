@@ -15,7 +15,11 @@ export const useEnqueueSong = () => {
 
             title = decodeHtmlEntities(title);
             playQueue.add({ title, id: youtubeVideoId, autoplay });
-            toast.success('Enqueued', `"${title}" was added to the queue`);
+            if(!autoplay) {
+                toast.success('Enqueued', `"${title}" was added to the queue`);
+            } else {
+                toast.dismiss();
+            }
         } catch(e) {
             toast.error('Failed enqueuing', `Could not enqueue video due to an error - ${e.message} ${e.descriptiveMessage ?? ''}`);
         }

@@ -25,6 +25,7 @@ const AudioPlayer = () => {
         const song = playQueue.values[0];
         const toast = new LoadingToast(song.title ?? 'song');
         setLoading(true);
+        setAudioUrl(null);
         try {
             const { codec, bitrate, bps, id: qualityId } = await selectBestOption(song.id);
             const { url, title } = await loadAudioURL(song.id, qualityId);
@@ -108,8 +109,10 @@ const AudioPlayer = () => {
 
     useEffect(() => {
         const onTopSong = playQueue.values[0];
-        if(onTopSong && onTopSong.id !== loadedSong?.id) {
-            loadSongInQueue(state !== PlayerState.STOPPED);
+        if(onTopSong && onTopSong.objId !== loadedSong?.objId) {
+            if(!loading) {
+                loadSongInQueue(state !== PlayerState.STOPPED);
+            }
         } else if(!onTopSong) {
             setLoadedSong(null);
             setAudioUrl(null);

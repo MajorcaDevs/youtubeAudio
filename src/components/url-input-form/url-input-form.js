@@ -34,8 +34,8 @@ const UrlInputForm = () => {
 
     const nextSong = useCallback((e) => {
         e.preventDefault();
-        //
-    }, []);
+        playQueue.deleteFirst();
+    }, [playQueue]);
 
     const { isUrlInvalid } = ytUrlInputState ?? {};
     return (
@@ -47,7 +47,7 @@ const UrlInputForm = () => {
                         name="Play Song"
                         value="Play Now!"
                         onClick={playSong}
-                        disabled={(loading || isUrlInvalid) && playQueue.length === 0}
+                        disabled={loading || isUrlInvalid}
                     />
                     <Button
                         name="Add to Queue"

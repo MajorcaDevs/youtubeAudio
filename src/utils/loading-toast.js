@@ -11,10 +11,12 @@ const NotifContent = ({ title, text, light }) => (
 
 class LoadingToastController {
     constructor(resource = null) {
+        console.trace(resource);
         this._toast = toast(<LoadingSpinner resource={resource} />, {
             autoClose: false,
             closeOnClick: false,
             closeButton: false,
+            draggable: false,
         });
     }
 
@@ -25,6 +27,7 @@ class LoadingToastController {
             autoClose: 4000,
             closeButton: null,
             closeOnClick: true,
+            draggable: true,
         });
     }
 
@@ -35,6 +38,7 @@ class LoadingToastController {
             type: toast.TYPE.ERROR,
             closeButton: null,
             closeOnClick: true,
+            draggable: true,
         });
     }
 
@@ -44,6 +48,7 @@ class LoadingToastController {
             type: toast.TYPE.INFO,
             closeButton: null,
             closeOnClick: true,
+            draggable: true,
         });
     }
 
@@ -51,5 +56,7 @@ class LoadingToastController {
         toast.dismiss(this._toast);
     }
 }
+
+window.LoadingToastController = LoadingToastController;
 
 export default LoadingToastController;

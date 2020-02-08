@@ -31,7 +31,7 @@ body {
     padding-bottom: 16px;
 }
 
-.title {
+.now-playing-text {
     position: relative;
     height: 70px;
     overflow: hidden;
@@ -210,7 +210,7 @@ body {
 
         &:hover > #arrow {
             border-color: #111;
-            @media (max-width: 575px) { border-color: white; }
+            @media (max-width: 575px) { border-color: #111; }
         }
     }
 }
