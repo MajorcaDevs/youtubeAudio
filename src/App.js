@@ -45,7 +45,7 @@ const App = () => {
     }, []);
 
     const onWindowKeyUp = useCallback((event) => {
-        if(event.code === 'Space' && event.target.getAttribute('id') !== 'videoURL') {
+        if(event.code === 'Space' && event.target.tagName !== 'INPUT') {
             if(audioPlayer.ref.current) {
                 event.preventDefault();
                 event.stopPropagation();

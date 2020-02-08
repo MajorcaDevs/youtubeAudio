@@ -62,9 +62,13 @@ export const PlayQueueProvider = ({ children }) => {
             return updatedElement;
         },
         swap(fromIndex, toIndex) {
-            const newQueue = [...queue];
-            const [removed] = newQueue.splice(fromIndex + 1, 1);
-            newQueue.splice(toIndex + 1, 0, removed);
+            if(fromIndex === toIndex) {
+                return;
+            }
+
+            const newQueue = Array.from(queue);
+            const [removed] = newQueue.splice(fromIndex, 1);
+            newQueue.splice(toIndex, 0, removed);
             setQueue(newQueue);
         },
         get length() {

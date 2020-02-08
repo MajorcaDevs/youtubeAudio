@@ -10,7 +10,6 @@ const PlayQueueItem = ({ song, index, onRemove, edit, style }) => !edit || index
         song={song}
         index={index}
         onRemove={onRemove}
-        style={style}
     />
 );
 
@@ -21,8 +20,13 @@ PlayQueueItem.propTypes = {
     }).isRequired,
     index: PropTypes.number.isRequired,
     onRemove: PropTypes.func.isRequired,
-    edit: PropTypes.bool.isRequired,
+    edit: PropTypes.bool,
     styles: PropTypes.object,
+};
+
+PlayQueueItem.defaultProps = {
+    edit: false,
+    styles: undefined,
 };
 
 export default PlayQueueItem;

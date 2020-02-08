@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { useCallback, useState } from 'react';
 import { useTransition, animated } from 'react-spring';
 import PlayQueueEditList from './play-queue-edit-list';
+import PlayQueueInfoList from './play-queue-info-list';
 import { usePlayQueue } from '../../hooks/play-queue';
 import '../../styles/PlayQueueList/PlayQueueList.scss';
 
@@ -9,9 +10,9 @@ const PlayQueueList = ({ showing }) => {
     const [edit, setEdit] = useState(false);
     const playQueue = usePlayQueue();
     const transitions = useTransition(showing, null, {
-        from: { transform: `translateX(${PlayQueueList._right}px)` },
-        enter: { transform: 'translateX(0)' },
-        leave: { transform: `translateX(${PlayQueueList._right}px)` },
+        from: { transform: PlayQueueList._right },
+        enter: { transform: 0 },
+        leave: { transform: PlayQueueList._right },
     });
 
     const reordered = useCallback(({ source, destination }) => {
@@ -33,28 +34,28 @@ const PlayQueueList = ({ showing }) => {
     }, [playQueue]);
 
     return transitions.map(({ item, key, props }) =>
-        item && (playQueue.values.length === 0
-            ? (
-                <animated.div key={key} id="playQueueList" style={props} className="py-3">
-                    <h2>Play Queue is Empty</h2>
-                </animated.div>
-            )
-            : (
-                <animated.div key={key} id="playQueueList" style={props} className="py-3 list">
-                    <div>
-                        <h2>Play Queue</h2>
-                        <div className="col-auto edit-icon">
-                            <button className={`btn btn-sm edit-button ${edit ? 'active' : ''}`} onClick={changeEditMode}>
-                                <i className="material-icons">edit</i>
-                            </button>
-                            <button className="btn btn-sm clear-button" onClick={clearQueue}>
-                                <i className="material-icons">clear_all</i>
-                            </button>
-                        </div>
+        item && (
+            <animated.div
+                key={key}
+                id="playQueueList"
+                /* If you ask, when value is 0, the translateX should not be set otherwise the D&D will stop working */
+                style={{ transform: props.transform.interpolate((v) => v ? `translateX(${v}px)` : '') }}
+                className="py-3 list"
+            >
+                <div>
+                    <h2>Play Queue</h2>
+                    <div className="col-auto edit-icon">
+                        <button className={`btn btn-sm edit-button ${edit ? 'active' : ''}`} onClick={changeEditMode}>
+                            <i className="material-icons">edit</i>
+                        </button>
+                        <button className="btn btn-sm clear-button" onClick={clearQueue}>
+                            <i className="material-icons">clear_all</i>
+                        </button>
                     </div>
-                    <PlayQueueEditList edit={edit} reordered={reordered} />
-                </animated.div>
-            )
+                </div>
+                {playQueue.values.length === 0 && <span className="text-muted">Play queue is empty</span>}
+                {edit ? <PlayQueueEditList reordered={reordered} /> : <PlayQueueInfoList />}
+            </animated.div>
         )
     );
 };

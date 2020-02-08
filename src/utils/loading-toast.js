@@ -11,7 +11,6 @@ const NotifContent = ({ title, text, light }) => (
 
 class LoadingToastController {
     constructor(resource = null) {
-        console.trace(resource);
         this._toast = toast(<LoadingSpinner resource={resource} />, {
             autoClose: false,
             closeOnClick: false,
