@@ -10,8 +10,12 @@ const NotifContent = ({ title, text, light }) => (
 );
 
 class LoadingToastController {
-    constructor() {
-        this._toast = toast(<LoadingSpinner />, { autoClose: false, closeOnClick: false, closeButton: false });
+    constructor(resource = null) {
+        this._toast = toast(<LoadingSpinner resource={resource} />, {
+            autoClose: false,
+            closeOnClick: false,
+            closeButton: false,
+        });
     }
 
     success(title, content) {
@@ -29,6 +33,15 @@ class LoadingToastController {
         toast.update(this._toast, {
             render: <NotifContent title={title} text={content} light />,
             type: toast.TYPE.ERROR,
+            closeButton: null,
+            closeOnClick: true,
+        });
+    }
+
+    info(title, content) {
+        toast.update(this._toast, {
+            render: <NotifContent title={title} text={content} />,
+            type: toast.TYPE.INFO,
             closeButton: null,
             closeOnClick: true,
         });

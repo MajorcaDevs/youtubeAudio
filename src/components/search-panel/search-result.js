@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { decodeHtmlEntities } from '../../utils';
 
 const SearchResult = ({ item, onPlayClicked, onEnqueueClicked }) => {
     const playClickListener = useCallback((e) => {
@@ -26,7 +27,7 @@ const SearchResult = ({ item, onPlayClicked, onEnqueueClicked }) => {
             </div>
             <div className="col row">
                 <div className="col-12 align-self-start">
-                    <small>{item.snippet.title}</small>
+                    <small>{decodeHtmlEntities(item.snippet.title)}</small>
                 </div>
                 <div className="col-12 align-self-end">
                     {item.id.kind === 'youtube#video' && <button className="btn btn-link" onClick={playClickListener}>

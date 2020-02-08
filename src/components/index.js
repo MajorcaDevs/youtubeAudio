@@ -8,3 +8,5 @@ export { default as PlayQueueList } from './play-queue-list';
 export { default as PlayQueueListButton } from './play-queue-list-button';
 export { default as SearchButton } from './search-button';
 export { default as SearchPanel } from './search-panel';
+export { default as UrlInputForm } from './url-input-form';
+export { default as AudioPlayer } from './audio-player';

@@ -1,12 +1,22 @@
 import React from 'react';
+import { usePlayQueue } from '../hooks/play-queue';
 
-const NowPlayingText = ({ title, currentFormat }) => title && (
-    <div className="title" id="stateText">
-        <div id="NowPlaying">
-            Now Playing: ({ currentFormat })
+const NowPlayingText = () => {
+    const playQueue = usePlayQueue();
+    const song = playQueue.values[0];
+
+    if(!song || !song.title) {
+        return null;
+    }
+
+    const currentFormat = `(${song.codec}@~${song.bitrate}kbps)`;
+    return (
+        <div className="title" id="stateText">
+            <div id="quality-format">{song.codec ? currentFormat : ''}</div>
+            <div id="NowPlaying">Now Playing:</div>
+            <div id="title" className="text-center">{song.title}</div>
         </div>
-        <div id="title" className="text-center"> { title } </div>
-    </div>
-);
+    );
+};
 
 export default NowPlayingText;

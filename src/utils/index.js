@@ -57,3 +57,14 @@ export const getYoutubeVideoID = (url) => {
     }
     return null;
 };
+
+const textarea = document.createElement('textarea');
+/**
+ * Decodes a string with HTML entities.
+ * @param {string} unencoded Unencoded string with HTML entities
+ * @returns {string} The string without HTML entities.
+ */
+export const decodeHtmlEntities = (unencoded) => {
+    textarea.innerHTML = unencoded ?? '';
+    return textarea.innerText;
+};

@@ -33,10 +33,19 @@ body {
 
 .title {
     position: relative;
-    height: 48px;
+    height: 70px;
     overflow: hidden;
 
-    & > #title {
+    > #quality-format {
+        font-size: 0.7rem;
+        color: lightgrey;
+
+        .AppLight & {
+            color: #666;
+        }
+    }
+
+    > #title {
         position: absolute;
         bottom: 4px;
         white-space: nowrap;

@@ -5,12 +5,6 @@ const Context = createContext();
 
 export const usePlayQueue = () => useContext(Context);
 
-export const withPlayQueue = (Component) => (props) => {
-    const playQueue = usePlayQueue();
-
-    return <Component playQueue={playQueue} {...props} />;
-};
-
 const songMap = (song) => {
     if(!song.objId) {
         song.objId = nanoid();
@@ -63,7 +57,9 @@ export const PlayQueueProvider = ({ children }) => {
                 return;
             }
 
-            setQueue([...queue.slice(0, index), songMap(element), ...queue.slice(index + 1)]);
+            const updatedElement = songMap(element);
+            setQueue([...queue.slice(0, index), updatedElement, ...queue.slice(index + 1)]);
+            return updatedElement;
         },
         swap(fromIndex, toIndex) {
             const newQueue = [...queue];
@@ -80,7 +76,8 @@ export const PlayQueueProvider = ({ children }) => {
     }), [queue]);
 
     useEffect(() => {
-        sessionStorage.setItem('youtube-audio:playQueue', JSON.stringify(queue));
+        const json = JSON.stringify(queue.map((s) => ({ ...s, autoplay: undefined })));
+        sessionStorage.setItem('youtube-audio:playQueue', json);
     }, [queue]);
 
     return <Context.Provider value={methods}>{children}</Context.Provider>;

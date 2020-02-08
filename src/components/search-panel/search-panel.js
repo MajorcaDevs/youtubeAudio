@@ -7,7 +7,7 @@ import { searchVideos } from '../../api';
 import { useEnqueuePlaylist, useEnqueueSong } from '../../hooks/enqueue';
 import '../../styles/SearchPanel/SearchPanel.scss';
 
-const SearchPanel = ({ showing, onPlayClicked }) => {
+const SearchPanel = ({ showing }) => {
     const transitions = useTransition(showing, null, {
         from: { transform: `translateX(${SearchPanel._right}px)` },
         enter: { transform: 'translateX(0)' },
@@ -75,6 +75,10 @@ const SearchPanel = ({ showing, onPlayClicked }) => {
         [enqueuePlaylist, enqueueSong],
     );
 
+    const onPlayClicked = useCallback(({ id: { kind, playlistId, videoId }, snippet: { title } }) => (
+        kind === 'youtube#playlist' ? enqueuePlaylist(playlistId, title, true) : enqueueSong(videoId, title, true)
+    ), [enqueuePlaylist, enqueueSong]);
+
     return transitions.map(({ item, key, props }) => item && (
         <animated.div id="searchPanel" style={props} key={key}>
             <div className="mt-4 ml-4 mr-4">
@@ -108,7 +112,6 @@ const SearchPanel = ({ showing, onPlayClicked }) => {
 
 SearchPanel.propTypes = {
     showing: PropTypes.bool.isRequired,
-    onPlayClicked: PropTypes.func.isRequired,
 };
 
 Object.defineProperty(SearchPanel, '_right', {
