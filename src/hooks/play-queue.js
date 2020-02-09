@@ -1,9 +1,20 @@
-import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
+import React, { createContext, useContext, useMemo, useState, useEffect, useRef } from 'react';
 import nanoid from 'nanoid';
 
 const Context = createContext();
 
 export const usePlayQueue = () => useContext(Context);
+
+export const usePlayQueueRef = () => {
+    const playQueue = usePlayQueue();
+    const ref = useRef(playQueue);
+
+    useEffect(() => {
+        ref.current = playQueue;
+    }, [playQueue]);
+
+    return ref;
+};
 
 const songMap = (song) => {
     if(!song.objId) {
@@ -24,10 +35,14 @@ export const PlayQueueProvider = ({ children }) => {
 
     const methods = useMemo(() => ({
         add(...elements) {
-            setQueue([...queue, ...elements.map(songMap)]);
+            const newElements = elements.map(songMap);
+            setQueue([...queue, ...newElements]);
+            return newElements;
         },
         addFirst(element) {
-            setQueue([songMap(element), ...queue]);
+            const newElement = songMap(element);
+            setQueue([newElement, ...queue]);
+            return newElement;
         },
         empty() {
             setQueue([]);
@@ -49,10 +64,14 @@ export const PlayQueueProvider = ({ children }) => {
                 ]);
             }
         },
+        find(song) {
+            return queue.find(songFind(song));
+        },
         update(indexOrElement, element) {
             const index = typeof indexOrElement === 'number' ?
                 indexOrElement :
-                queue.findIndex(songFind(element));
+                queue.findIndex(songFind(indexOrElement));
+            element = typeof indexOrElement === 'number' ? element : indexOrElement;
             if(index === -1) {
                 return;
             }

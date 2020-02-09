@@ -1,7 +1,7 @@
 import bowser from 'bowser';
 import React, { createContext, useContext, useCallback, useEffect, useRef, useState } from 'react';
-import { selectBestOption, loadAudioURL } from '../api';
-import { usePlayQueue } from '../hooks/play-queue';
+import { selectBestOption, loadAudioURL, getPassthroughUrl } from '../api';
+import { usePlayQueue, usePlayQueueRef } from '../hooks/play-queue';
 import LoadingToast from '../utils/loading-toast';
 
 export const AudioPlayerContext = createContext();
@@ -12,8 +12,11 @@ export const PlayerState = Object.seal({
     PAUSED: 'paused',
 });
 
+const browser = bowser.getParser(window.navigator.userAgent);
+
 const AudioPlayer = () => {
     const playQueue = usePlayQueue();
+    const playQueueRef = usePlayQueueRef();
     const { setValue: setAudioPlayerContextValue } = useContext(AudioPlayerContext) ?? {};
     const audioRef = useRef();
     const [audioUrl, setAudioUrl] = useState(null);
@@ -27,9 +30,16 @@ const AudioPlayer = () => {
         setLoading(true);
         setAudioUrl(null);
         try {
-            const { codec, bitrate, bps, id: qualityId } = await selectBestOption(song.id);
+            let { codec, bitrate, qualityId } = song;
+            if(!qualityId) {
+                const res = await selectBestOption(song.id);
+                codec = res.codec;
+                bitrate = res.bitrate || res.bps;
+                qualityId = res.qualityId;
+            }
+
             const { url, title } = await loadAudioURL(song.id, qualityId);
-            setLoadedSong(playQueue.update(0, { ...song, codec, bitrate: bitrate || bps, qualityId, title }));
+            setLoadedSong(playQueueRef.current.update(0, { ...song, codec, bitrate: bitrate, qualityId, title }));
             setAudioUrl(url);
 
             if(song.autoplay ?? autoplay) {
@@ -50,7 +60,7 @@ const AudioPlayer = () => {
             toast.error(e.message, e.descriptiveMessage);
         }
         setLoading(false);
-    }, [playQueue]);
+    }, [playQueue, playQueueRef]);
 
     const onPlayerError = useCallback((e) => {
         const { error } = e.target;
@@ -60,14 +70,15 @@ const AudioPlayer = () => {
                 break;
 
             case error.MEDIA_ERR_SRC_NOT_SUPPORTED: {
-                //
+                const { id, qualityId } = playQueue.values[0];
+                setAudioUrl(getPassthroughUrl(id, qualityId));
                 break;
             }
 
             default:
                 console.error(`Unhandled player error ${error.code}`);
         }
-    }, []);
+    }, [playQueue]);
 
     const onPlayerSongEnd = useCallback(() => {
         playQueue.deleteFirst();
@@ -81,7 +92,7 @@ const AudioPlayer = () => {
 
     const onPlayerPlayProgressUpdate = useCallback(() => {
         let { currentTime, duration } = audioRef.current;
-        if(bowser.safari) {
+        if(browser.satisfies({ safari: '>1' })) {
             //Workaround for Safari m4a playing bug
             duration /= 2;
         }

@@ -1,14 +1,16 @@
 import React, { useCallback, useState } from 'react';
 import YtUrlInput from './yt-url-input';
 import Button from '../button';
+import { useAudioPlayer } from '../../hooks/audio-player';
 import { useEnqueuePlaylist, useEnqueueSong } from '../../hooks/enqueue';
 import { usePlayQueue } from '../../hooks/play-queue';
 
 const UrlInputForm = () => {
-    const [ytUrlInputState, setYtUrlInputState] = useState(null);
     const playQueue = usePlayQueue();
     const enqueuePlaylist = useEnqueuePlaylist();
     const enqueueSong = useEnqueueSong();
+    const audioPlayer = useAudioPlayer();
+    const [ytUrlInputState, setYtUrlInputState] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const playSong = useCallback((e) => {
@@ -40,26 +42,26 @@ const UrlInputForm = () => {
     const { isUrlInvalid } = ytUrlInputState ?? {};
     return (
         <>
-            <YtUrlInput loading={loading} onStateChanged={setYtUrlInputState} />
+            <YtUrlInput loading={loading || audioPlayer.loading} onStateChanged={setYtUrlInputState} />
             <div className="row justify-content-center">
                 <div className="btn-group mt-3">
                     <Button
                         name="Play Song"
                         value="Play Now!"
                         onClick={playSong}
-                        disabled={loading || isUrlInvalid}
+                        disabled={loading || isUrlInvalid || audioPlayer.loading}
                     />
                     <Button
                         name="Add to Queue"
                         value="Enqueue"
                         onClick={addToQueue}
-                        disabled={loading || isUrlInvalid}
+                        disabled={loading || isUrlInvalid || audioPlayer.loading}
                     />
                     <Button
                         name="Next song"
                         value="Next Song"
                         onClick={nextSong}
-                        disabled={loading || playQueue.length < 2}
+                        disabled={loading || playQueue.length < 2 || audioPlayer.loading}
                     />
                 </div>
             </div>

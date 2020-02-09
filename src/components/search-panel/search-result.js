@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { decodeHtmlEntities } from '../../utils';
 
-const SearchResult = ({ item, onPlayClicked, onEnqueueClicked }) => {
+const SearchResult = ({ item, onPlayClicked, onEnqueueClicked, loading }) => {
     const playClickListener = useCallback((e) => {
         e.preventDefault();
         onPlayClicked(item);
@@ -30,10 +30,10 @@ const SearchResult = ({ item, onPlayClicked, onEnqueueClicked }) => {
                     <small>{decodeHtmlEntities(item.snippet.title)}</small>
                 </div>
                 <div className="col-12 align-self-end">
-                    {item.id.kind === 'youtube#video' && <button className="btn btn-link" onClick={playClickListener}>
+                    {item.id.kind === 'youtube#video' && <button className="btn btn-link" onClick={playClickListener} disabled={loading}>
                         <i className="material-icons">play_circle_outline</i>
                     </button>}
-                    <button className="btn btn-link" onClick={enqueueClickListener}>
+                    <button className="btn btn-link" onClick={enqueueClickListener} disabled={loading}>
                         <i className="material-icons">playlist_add</i>
                     </button>
                 </div>
@@ -52,6 +52,11 @@ SearchResult.propTypes = {
     }).isRequired,
     onPlayClicked: PropTypes.func.isRequired,
     onEnqueueClicked: PropTypes.func.isRequired,
+    loading: PropTypes.bool,
+};
+
+SearchResult.defaultProps = {
+    loading: false,
 };
 
 export default SearchResult;

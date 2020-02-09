@@ -50,7 +50,7 @@ export class Lastfm {
             x[e[0]] = e[1];
             return x;
         }, {});
-        if(window.localStorage.getItem('lastfm')) {
+        if(window.localStorage.getItem('youtubeaudio:lastfm')) {
             const { userToken, userName, disableScrobblings } = JSON.parse(window.localStorage.getItem('youtubeaudio:lastfm'));
             this._userToken = userToken;
             this._userName = userName;

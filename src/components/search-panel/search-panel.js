@@ -4,6 +4,7 @@ import { useTransition, animated } from 'react-spring';
 import Pagination from './pagination';
 import SearchResult from './search-result';
 import { searchVideos } from '../../api';
+import { useAudioPlayer } from '../../hooks/audio-player';
 import { useEnqueuePlaylist, useEnqueueSong } from '../../hooks/enqueue';
 import '../../styles/SearchPanel/SearchPanel.scss';
 
@@ -20,6 +21,7 @@ const SearchPanel = ({ showing }) => {
     const search = useRef(null);
     const enqueuePlaylist = useEnqueuePlaylist();
     const enqueueSong = useEnqueueSong();
+    const audioPlayer = useAudioPlayer();
 
     const searchFieldChanged = useCallback((event) => {
         event.preventDefault();
@@ -101,6 +103,7 @@ const SearchPanel = ({ showing }) => {
                             item={item}
                             onPlayClicked={onPlayClicked}
                             onEnqueueClicked={onEnqueueClicked}
+                            loading={loading || audioPlayer.loading}
                         />
                     ))}
                     {paginationElement}
