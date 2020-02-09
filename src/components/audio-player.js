@@ -25,7 +25,7 @@ const AudioPlayer = () => {
     const [loadedSong, setLoadedSong] = useState(null);
 
     const loadSongInQueue = useCallback(async (autoplay) => {
-        const song = playQueue.values[0];
+        let song = playQueue.values[0];
         const toast = new LoadingToast(song.title ?? 'song');
         setLoading(true);
         setAudioUrl(null);
@@ -36,10 +36,11 @@ const AudioPlayer = () => {
                 codec = res.codec;
                 bitrate = res.bitrate || res.bps;
                 qualityId = res.qualityId;
+                song = playQueueRef.current.update(0, { ...song, codec, bitrate: bitrate, qualityId });
             }
 
             const { url, title } = await loadAudioURL(song.id, qualityId);
-            setLoadedSong(playQueueRef.current.update(0, { ...song, codec, bitrate: bitrate, qualityId, title }));
+            setLoadedSong(song = playQueueRef.current.update(0, { ...song, title }));
             setAudioUrl(url);
 
             if(song.autoplay ?? autoplay) {
