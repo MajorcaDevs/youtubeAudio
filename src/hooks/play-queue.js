@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, useState, useEffect, useRef } from 'react';
-import nanoid from 'nanoid';
+import { nanoid } from 'nanoid';
 
 const Context = createContext();
 

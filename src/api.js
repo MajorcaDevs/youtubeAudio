@@ -40,11 +40,11 @@ export const selectBestOption = async (youtubeVideoID) => {
         throw new ApiException('Video not found', 'Check that the video URL exists or is complete.');
     }
 
-    const formats = await res.json();
+    const { audio: formats } = await res.json();
     const supportedFormats = formats
         .filter(e => compatibility.m4a && e.container === 'm4a')
-        .concat(formats.filter(e => compatibility.vorbis && e.extra.startsWith('vorbis')))
-        .concat(formats.filter(e => compatibility.opus && e.extra.startsWith('opus')));
+        .concat(formats.filter(e => compatibility.vorbis && e.codec.startsWith('vorbis')))
+        .concat(formats.filter(e => compatibility.opus && e.codec.startsWith('opus')));
     if(supportedFormats.length === 0) {
         throw new ApiException('No compatible sources for your browser',
             'We could not find any compatible sources for your browser. It seems ' +
@@ -52,8 +52,6 @@ export const selectBestOption = async (youtubeVideoID) => {
     }
 
     supportedFormats.forEach(e => {
-        let bits = e.extra.split(/[\s@k]+/g);
-        e.codec = bits[0]; e.bitrate = parseInt(bits[1], 10);
         if (e.codec !== 'vorbis' && e.codec !== 'opus')
             e.codec = 'm4a';
     });

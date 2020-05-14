@@ -35,13 +35,13 @@ const AudioPlayer = () => {
                 const res = await selectBestOption(song.id);
                 codec = res.codec;
                 bitrate = res.bitrate || res.bps;
-                qualityId = res.qualityId;
+                qualityId = res.id;
                 song = playQueueRef.current.update(0, { ...song, codec, bitrate: bitrate, qualityId });
             }
 
-            const { url, title } = await loadAudioURL(song.id, qualityId);
+            const { urls, title } = await loadAudioURL(song.id, qualityId);
             setLoadedSong(song = playQueueRef.current.update(0, { ...song, title }));
-            setAudioUrl(url);
+            setAudioUrl(urls[`${qualityId}`]);
 
             if(song.autoplay ?? autoplay) {
                 audioRef.current.oncanplay = async () => {
